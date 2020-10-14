@@ -1,39 +1,5 @@
-"""
-Authors: Ross Pitman, Jack Gularte, Devin DeWitt
-File: recognition.py
-Date Last Modified: April 24th, 2019
-For: Panthera Organization
-Purpose: Use computer vision to help determine the number of individual cats in
-            a database.
-Output: 'score_matrix.csv'; A matrix of similarity scores between each two images
-            within the database
-To Run: python recogntion.py -work_directory "path_to_work_directory"
-"""
+import configparser
 
-# EXAMPLE USAGES
-################################################################################
-# (if work directory is the directory the file resides in):
-#       python recognition_new.py
-
-# (if work directory is somewhere else you need to specify where):
-#       python recognition_new.py -work_directory "c:/Users/Jack Gualrte/Desktop"
-########################### END USAGES #########################################
-
-# NOTES
-################################################################################
-"""
-    * number of processes has to be less than the number of images in directory
-
-    * if python2 'pip install opencv-contrib-python==3.3.1.11'
-        'i dont think this script will work on python 2 anymore, some packages'
-        ' are python 3 and up'
-    * if python3 then 'pip install opencv-contrib-python==3.4.2.16'
-"""
-################################ END NOTES #####################################
-
-# IMPORTS
-################################################################################
-# basic python
 import os, sys
 import time, datetime
 from copy import deepcopy
@@ -1099,47 +1065,24 @@ def init_Recognition(image_source, template_source):
     # return the list of recognition objects
     return rec_list
 
-
-########################### END FUNCTION DEFINITIONS ###########################
-
-# MAIN
-################################################################################
 if __name__ == "__main__":
 
-    # set up via command line
-    parser = argparse.ArgumentParser()
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    args = config['default']
 
-    # easy config
-    parser.add_argument("-work_directory", type = Path, required = False, default = None)
-
-    # manual config
-    parser.add_argument("-image_source", type = Path, required = True, default = None)
-    parser.add_argument("-template_source", type = Path, required = False, default = None)
-    parser.add_argument("-config_source", type = Path, required = False, default = None)
-    parser.add_argument("-cluster_source", type = Path, required = False, default = None)
-    parser.add_argument("-destination", type = Path, required = False, default = Path.cwd())
-    parser.add_argument("-num_threads", type = int, required = False, default = 1)
-    parser.add_argument("-write_threshold", type = int, required = False, default = 60)
-    parser.add_argument("-validation_dataset", type = Path, required = False, default = None)
-    parser.add_argument("-weight_source", type = Path, required = False, default = None)
-    parser.add_argument("-score_matrixCSV", type = Path, required = False, default = None)
-    parser.add_argument("-edited_photos", type = Path, required = False, default = None)
-    args = vars(parser.parse_args())
-
-    # initialize depending on input arguments
-    paths = {'images': '', 'templates': '', 'config': '', 'cluster': '', 'destination': '','score_matrixCSV': '', 'edited_photos': ''}
-
+    paths = dict()
     paths['images'] = args['image_source']
     paths['templates'] = args['template_source']
     paths['config'] = args['config_source']
-    paths['cluster'] = args['cluster_source']
+    paths['cluster'] = None
     paths['destination'] = args['destination']
     paths['validation_dataset'] = args['validation_dataset']
     paths['weight_source'] = args['weight_source']
     paths['score_matrixCSV'] = args['score_matrixCSV']
     paths['edited_photos'] = args['edited_photos']
-    n_threads = args['num_threads']
-    write_threshold = args['write_threshold']
+    n_threads = int(args['num_threads'])
+    write_threshold = int(args['write_threshold'])
 
     # TODO: change this to fit new command line argument scheme
     # Use the config.json file to import variable parameters
@@ -1148,8 +1091,6 @@ if __name__ == "__main__":
 
     # initialize the array of Recognition objects for the images
     rec_list = init_Recognition(paths['images'], paths['templates'])
-    
-    #print("tmeplate path: ", paths['templates'])
 
     if (int(parameters['config']['templating']) == 1):
         print('\n\tUsing premade templates...\n')
@@ -1184,7 +1125,7 @@ if __name__ == "__main__":
     
     # write the score matrix to a .csv file
     print("\n\tWriting score_matrix to 'score_matrix.csv' to the destination folder...\n")
-    np.savetxt(paths['destination'].joinpath('score_matrix.csv'), score_matrix, delimiter = ",")
+    np.savetxt(paths['destination']+'/score_matrix.csv', score_matrix, delimiter = ",")
 
 
     # check matrix for average hit/miss scores

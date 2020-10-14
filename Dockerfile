@@ -5,4 +5,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 COPY ./recognition /app/recognition
 WORKDIR /app/recognition
-CMD ["python", "easy_run.py"]
+CMD ["python", "recognition.py"]
