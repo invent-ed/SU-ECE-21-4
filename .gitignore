@@ -1,0 +1,14 @@
+**/.DS_Store
+.idea
+
+data/edited/*
+!data/images/.gitkeep
+data/images/*
+!data/images/.gitkeep
+data/results/*
+!data/results/.gitkeep
+data/templates/*
+!data/templates/.gitkeep
+
+mask_rcnn/*
+!mask_rcnn/.gitkeep
