@@ -12,3 +12,5 @@ data/templates/*
 
 mask_rcnn/*
 !mask_rcnn/.gitkeep
+
+test/*

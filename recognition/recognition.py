@@ -73,8 +73,8 @@ class Recognition:
         self.date = ""
         self.time = ""
         self.cat_ID = ""
-        self.key_points
-        self.kp_desc
+        self.key_points = None
+        self.kp_desc = None
 
     def add_image(self, image_title, image):
         self.image_title = image_title
@@ -93,10 +93,10 @@ class Recognition:
     def add_cat_ID(self, cat):
         self.cat_ID = cat
         
-    def kp_set(self):
+    def calculate_kp(self):
         mask_1 = cv2.imread(self.template_title, -1) 
         mySift = cv2.xfeatures2d.SIFT_create()
-        key_points, kp_desc = mySift.detectAndCompute(self.image, mask_1)
+        self.key_points, self.kp_desc = mySift.detectAndCompute(self.image, mask_1)
 ########################### END CLASS DEFINITION ###############################
 
 # FUNCTION DEFINITIONS (In Reverse Order of Call)
@@ -723,7 +723,7 @@ def match_multi(primary_images, image_destination, n_threads, write_threshold, p
     'if the user has declared to use multiple threads'
 
     # deep copy the primary_images for secondary images
-    secondary_images = deepcopy(primary_images)
+    secondary_images = primary_images
 
     # init score_matrix
     num_pictures = len(primary_images)
@@ -1129,7 +1129,11 @@ if __name__ == "__main__":
     # START
     print("\tstarting matching process...\n")
     start = time.time()
+    for rec in rec_list:
+        rec.calculate_kp()
     score_matrix = match_multi(rec_list, paths['destination'], n_threads, write_threshold, parameters)
+    print("Type kp:", type(rec_list[0].key_points))
+    print("Type desc:", type(rec_list[0].kp_desc))
 
 
     # Normalize scores in matrix
