@@ -73,6 +73,8 @@ class Recognition:
         self.date = ""
         self.time = ""
         self.cat_ID = ""
+        self.key_points
+        self.kp_desc
 
     def add_image(self, image_title, image):
         self.image_title = image_title
@@ -90,6 +92,11 @@ class Recognition:
 
     def add_cat_ID(self, cat):
         self.cat_ID = cat
+        
+    def kp_set(self):
+        mask_1 = cv2.imread(self.template_title, -1) 
+        mySift = cv2.xfeatures2d.SIFT_create()
+        key_points, kp_desc = mySift.detectAndCompute(self.image, mask_1)
 ########################### END CLASS DEFINITION ###############################
 
 # FUNCTION DEFINITIONS (In Reverse Order of Call)
@@ -589,9 +596,12 @@ def match(primary_images, secondary_images, image_destination,
 
         print("\t\tMatching: " + os.path.basename(primary_images[primary_count].image_title) + "\n")
         # create mask from template and place over image to reduce ROI
-        mask_1 = cv2.imread(primary_images[primary_count].template_title, -1) 
-        mySift = cv2.xfeatures2d.SIFT_create()
-        kp_1, desc_1 = mySift.detectAndCompute(primary_images[primary_count].image, mask_1)
+        #mask_1 = cv2.imread(primary_images[primary_count].template_title, -1) 
+        #mySift = cv2.xfeatures2d.SIFT_create()
+        #kp_1, desc_1 = mySift.detectAndCompute(primary_images[primary_count].image, mask_1)
+        
+        kp_1 = primary_images[primary_count].key_points
+        desc_1 = primary_images[primary_count].kp_desc
         
         for i in desc_1:
             descriptors.append(i)
@@ -611,9 +621,11 @@ def match(primary_images, secondary_images, image_destination,
             # check if same image; if not, go into sophisticated matching
             if primary_images[primary_count].image_title != secondary_images[secondary_count].image_title:
 
+                 kp_2 = secondary_images[secondary_count].key_points
+                 desc_2 = secondary_images[secondary_count].kp_desc
                  # create mask from template
-                 mask_2 = cv2.imread(secondary_images[secondary_count].template_title, -1)
-                 kp_2, desc_2 = mySift.detectAndCompute(secondary_images[secondary_count].image, mask_2)
+                 #mask_2 = cv2.imread(secondary_images[secondary_count].template_title, -1)
+                 #kp_2, desc_2 = mySift.detectAndCompute(secondary_images[secondary_count].image, mask_2)
 
                  # check for matches
                  try:
