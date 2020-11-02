@@ -35,23 +35,23 @@ import skimage.io
 
 # EDIT PATHS FOR MASK R-CNN LIBRARY FOLDER ################################################################################
 # Root directory of the project
-ROOT_DIR = os.path.abspath("../..")
+ROOT_DIR = os.path.abspath("/app")
 #print(ROOT_DIR)
 #ROOT_DIR = "Mask_RCNN-master"
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-from mrcnn import utils
-from mrcnn import visualize
-from mrcnn.visualize import display_images
-import mrcnn.model as modellib
-from mrcnn.model import log
+from mask_rcnn.mrcnn import utils
+from mask_rcnn.mrcnn import visualize
+from mask_rcnn.mrcnn.visualize import display_images
+import mask_rcnn.mrcnn.model as modellib
+from mask_rcnn.mrcnn.model import log
 
-# from samples.snow_leopard import snow_leopard
+from mask_rcnn.samples.snow_leopard import snow_leopard
 
 #%matplotlib inline 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "logs")
+MODEL_DIR = os.path.join(ROOT_DIR, "data/logs")
 
 global mark_array
 ########################### END IMPORTS ########################################
@@ -867,11 +867,12 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
     #-------------------------------------------------------------------------------
     config = snow_leopard.CustomConfig()
     ## TODO: change this path or get it into easy_run.py
-    ##snowleop_dir = os.path.join(ROOT_DIR, "C:/Users/Phil/SU-ECE-19-7-master-MaskRCNN/Recognition/samples/snow_leopard/dataset")
+    #snowleop_dir = os.path.join(ROOT_DIR, "/app/recognition/mask_rcnn/samples/snow_leopard/dataset")
     class InferenceConfig(config.__class__):
     # Run detection on one image at a time
         GPU_COUNT = 1
         IMAGES_PER_GPU = 1
+        PRE_NMS_LIMIT = 6000
 
     config = InferenceConfig()
     config.display()
@@ -880,7 +881,7 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
     DEVICE = "/cpu:0"  # /cpu:0 or /gpu:0
     # Inspect the model in training or inference modes
     # values: 'inference' or 'training'
-    TEST_MODE = "inference"
+    #TEST_MODE = "inference"
     def get_ax(rows=1, cols=1, size=16):
         """Return a Matplotlib Axes array to be used in
         all visualizations in the notebook. Provide a
@@ -893,16 +894,17 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
     # Load validation dataset
     dataset = snow_leopard.CustomDataset()
     dataset.load_custom(snowleop_dir, "val")
-
+    
     # Must call before using the dataset
     dataset.prepare()
 
     print("Images: {}\nClasses: {}".format(len(dataset.image_ids), dataset.class_names))
-
+    print("Test 1 - Instance right before defining mrcnn model.\n\n")
     # Create model in inference mode
     with tf.device(DEVICE):
         model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
-   
+    
+    print("Test 2 - Instance right after defining model.\n\n")
     # Set path to balloon weights file
 
     # Optional: Download file from the Releases page and set its path
@@ -912,10 +914,13 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
     # Load weights
     print("Loading weights ", weights_path)
     model.load_weights(str(weights_path), by_name=True)
-
-    temp_templates = image_source.parents[1] / "mrcnn_templates/"
-    if (not os.path.exists(temp_templates)):
-        os.mkdir(temp_templates)
+    print("Test 3 - Instance right after loading weights. \n\n")
+    # d = Path(__file__).resolve().parents[1]
+    # print(d)
+    #print(image_source)
+    temp_templates = "/app/data/mrcnn_templates"
+    if not os.path.exists(temp_templates):
+        os.makedirs(temp_templates)
 
     count = 0
 
@@ -923,9 +928,11 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
     for t in glob.iglob(str(image_source)):
         
         ## TODO: edit this path
-        IMAGE_DIR = str(image_source) + '/*'
+        #print('t: ',t)
+        #print('Image Source: ', image_source)
+        IMAGE_DIR = image_source
         # Load a random image from the images folder
-        file_names = next(os.walk(IMAGE_DIR))[2]
+        file_names = t
         maskimage = skimage.io.imread(rec_list[count].image_title)
         # Run detection
         results = model.detect([maskimage], verbose=1)
@@ -962,7 +969,7 @@ def mrcnn_templates(rec_list, image_source, snowleop_dir, weights_path):
         # get template name and write BMP from r_mask
         template = cv2.imread(t)
         template_name = Path(t).with_suffix('.BMP')
-        template_path = temp_templates / template_name.name
+        template_path = temp_templates + '/'+template_name.name
         cv2.imwrite(str(template_path), r_mask, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
         # add template to corresponding rec_list object
@@ -1065,7 +1072,7 @@ def init_Recognition(image_source, template_source):
         rec_list[count].add_image(i, image)
         #rec_list[count].add_template(rec_list, template_source)
 
-        filter_images(image,i,str(paths['edited_photos']))
+        #filter_images(image,i,str(paths['edited_photos']))
 
         # get title characteristics
         station, camera, date, time = getTitleChars(i)

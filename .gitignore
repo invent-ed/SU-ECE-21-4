@@ -9,8 +9,10 @@ data/results/*
 !data/results/.gitkeep
 data/templates/*
 !data/templates/.gitkeep
+data/mrcnn_templates/*
+!data/mrcnn_templates/.gitkeep
 
-mask_rcnn/*
-!mask_rcnn/.gitkeep
+recognition/mask_rcnn
+data/logs
 
 test/*
