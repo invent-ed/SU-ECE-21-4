@@ -1088,7 +1088,6 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read("config.ini")
-    args = config['default']
 
     paths = dict()
     paths['images'] = args['image_source']
