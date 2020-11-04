@@ -410,12 +410,15 @@ def write_matches(kp_1, kp_2, good_points, primary_image, secondary_image, image
     # # TODO: For some reason it says the 'image_destination' object is
     #           a str type at this point in the program even though it is not.
     #           Look into why.
-    image_path = image_destination.joinpath(str(len(good_points)) +
-    "___" +
-    re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
-    "___" +
-    re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title))
-    )
+    #image_path = image_destination.joinpath(str(len(good_points)) +
+    #"___" +
+    #re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
+    #"___" +
+    #re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title))
+    #)
+    image_path2 = (re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
+        "___" + re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title)))
+    image_path = (image_destination + "/" + str(len(good_points)) + "___" + str(image_path2))
 
     # Finally, write the finished image to the output folder.
     cv2.imwrite(str(image_path), result_vertical_concat, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
@@ -443,7 +446,7 @@ def make_lut_v():
     return np.array([[[0,255-i,i] for i in range(256)]],dtype=np.uint8)
 ################################################################################
 def variance_of_laplacian(image):
-	# compute the Laplacian of the image and then return the variance
+    # compute the Laplacian of the image and then return the variance
     # of the Laplacian
 	return cv2.Laplacian(image, cv2.CV_64F).var()
 ################################################################################
@@ -525,7 +528,7 @@ def filter_images(primary_image,image_source,edited_source):
             else:
                 print("blurry")
         else:
-            flag = 1;
+            flag = 1
             print("night")
             
             
@@ -1088,6 +1091,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read("config.ini")
+    args = config['default']
 
     paths = dict()
     paths['images'] = args['image_source']
