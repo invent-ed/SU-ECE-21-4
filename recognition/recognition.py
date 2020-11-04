@@ -84,11 +84,12 @@ class Recognition:
         self.template_title = template_title
         self.template = template
 
-    def add_title_chars(self, station, camera, date, time):
-        self.station = station
-        self.camera = camera
-        self.date = date
-        self.time = time
+    def add_title_chars(self, title):
+    	title_chars = title.split("__")
+    	self.station = title_chars[1]
+    	self.camera = title_chars[2]
+    	self.date = title_chars[3]
+    	self.time = title_chars[4][:-7]
 
     def add_cat_ID(self, cat):
         self.cat_ID = cat
@@ -99,229 +100,36 @@ class Recognition:
         self.key_points, self.kp_desc = mySift.detectAndCompute(self.image, mask_1)
 ########################### END CLASS DEFINITION ###############################
 
-# FUNCTION DEFINITIONS (In Reverse Order of Call)
+################################################################################
+def init_Recognition(image_source, template_source):
+    'Used to initalize a recongition object for each template/image pair'
+    # # TODO: create a function that verifies the image and template names match
 
-##inputs should be score_matrix, k_range
-def kmeans_score_matrix(score_matrixCSV):
+    rec_list = []
+    count = 0
 
-    # score matrix file path
-    filename = score_matrixCSV
+    # add images and templates in a parallel for-loop
+    for i in glob.iglob(str(image_source)):
 
-    # initializing the titles and rows list 
-    fields = [] 
-    rows = [] 
-    cluster_arr = []
-    rowsCount = 0
-    # reading csv file 
-    with open(filename, 'r') as csvfile: 
-        # creating a csv reader object 
-        csvreader = csv.reader(csvfile) 
+        # add new Recognition object to list
+        rec_list.append(Recognition())
+
+        # add image title and image to object
+        image = cv2.imread(i)
         
-        # extracting field names through first row 
-        fields = next(csvreader)
-        rowsCount = 1 
-        for k in fields:
-            cluster_arr.append(k)
-    
-        # extracting each data row one by one 
-        for row in csvreader: 
-            rows.append(row) 
-            rowsCount += 1
-    
-        
-    for i in rows:
-        for j in i:
-            cluster_arr.append(j)
+        rec_list[count].add_image(i, image)
+        #rec_list[count].add_template(rec_list, template_source)
 
-    print(len(cluster_arr))
+        filter_images(image,i,str(paths['edited_photos']))
 
-    #preprocess array for clustering input
-    divided_arr = np.array_split(cluster_arr, csvreader.line_num)
-    clustering_in = np.vstack(divided_arr)
-    clustering_in = np.float32(clustering_in)
+        rec_list[count].add_title_chars(i)
 
-    colors = ['b', 'g', 'r']
-    markers = ['o', 'v', 's']
-    distortion = []
-    clusterCount = 0
+        # increment count
+        count = count + 1
 
-    #range for number of clusters 
-    K = range(1,10)
+    # return the list of recognition objects
+    return rec_list
 
-    #clustering descriptors and using the elbow method to determine k
-    for k in K:
-        try:
-            kmeanModel = KMeans(n_clusters=k).fit(clustering_in)
-            kmeanModel.fit(clustering_in)
-            distortion.append(sum(np.min(cdist(clustering_in, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / clustering_in.shape[0])
-            clusterCount = clusterCount + 1
-        except:
-            pass
-
-
-    K = range(1, clusterCount+1)
-    #plt.plot(K, distortion, 'bx-')
-    #plt.xlabel('k')
-    #plt.ylabel('Distortion')
-    #plt.title('The Elbow Method showing the optimal k (Score Matrix)')
-    #plt.show()
-
-
-    print('\n')
-    print("done clustering\n")
-
-def kmeans_clustering(descriptors_list, k_range): 
-
-    print("Starting clustering....\n")
-
-    max_decrease_index = 0
-    max_decrease = 0.0
-
-    #preprocess array of descriptors for clustering input
-    new_arr = np.asarray(descriptors_list)
-    print(len(new_arr))
-    divided_array = np.array_split(new_arr, 128)
-    clustering_input = np.vstack(divided_array)
-    clustering_input = np.float32(clustering_input)
-
-    colors = ['b', 'g', 'r']
-    markers = ['o', 'v', 's']
-    distortions = []
-
-    #range for number of clusters 
-    K = range(1,k_range)
-
-    #clustering descriptors and using the elbow method to determine k
-    for k in K:
-        kmeanModel = KMeans(n_clusters=k).fit(clustering_input)
-        kmeanModel.fit(clustering_input)
-        distortions.append(sum(np.min(cdist(clustering_input, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / clustering_input.shape[0])
-
-    print("Preparing plot...")
-
-    # Plot the elbow
-    plt.plot(K, distortions, 'bx-')
-    plt.xlabel('k')
-    plt.ylabel('Distortion')
-    plt.title('The Elbow Method showing the optimal k (descriptors)')
-    plt.show()
-
-    print('\n')
-    print("done clustering\n")
-
-
-def test_accuracy(rec_list, score_matrix, threshold):
-
-    # True positive: number of times a match was correctly classified as a match
-    TP = 0 
-    # False negative: number of times a correct match was dismissed as not a match
-    FN = 0 
-    # False positive:  number of times two image were incorrectly matched
-    FP = 0 
-    # True negative: the number of matches that were corectly dismissed as not matches
-    TN = 0 
-
-    # traverse rows
-    for row in range(score_matrix.shape[0]):
-        primary_cat = rec_list[row].cat_ID
-        primary_title = rec_list[row].image_title
-
-        # traverse columns
-        for column in range(score_matrix.shape[1]):
-            # leave out the diagonal 
-            if (row != column):
-                secondary_cat = rec_list[column].cat_ID
-
-                if (score_matrix[row][column] > threshold and primary_cat == secondary_cat):
-                    TP = TP + 1
-                elif (score_matrix[row][column] <= threshold and primary_cat == secondary_cat):
-                    FN = FN + 1
-                elif (score_matrix[row][column] > threshold and primary_cat != secondary_cat):
-                    FP = FP + 1
-                else:
-                    TN = TN + 1
-
-
-    accuracy = ((TP+FP) / (TP+FP+TN+FN)) * 100
-    recall = (TP) / (TP+FN)
-    specificity = (TN) / (TN+FP)
-    precision = (TP) / (TP+FP)
-
-
-    print("\n\n")
-    print("Hits:",TP)
-    print("Misses:", FN)
-    print("Missclassifications:", FP)
-    print("\n")
-    print("Accuracy:", accuracy)
-    print("Recall/Sensitivity:", recall)
-    print("Specificity:", specificity)
-    print("Precision:", precision)
-
-
-################################################################################
-
-################################################################################
-def check_matrix(rec_list, score_matrix):
-
-
-    hit = 0
-    hit_count = 0
-    miss = 0
-    miss_count = 0
-
-    # traverse rows
-    for row in range(score_matrix.shape[0]):
-
-        primary_cat = rec_list[row].cat_ID
-        primary_title = rec_list[row].image_title
-        #print("Cat_ID: {0}; Image: {1}".format(primary_cat, primary_title))
-
-        # traverse columns
-        for column in range(score_matrix.shape[1]):
-            # dont check the same image.
-            if (row != column):
-                secondary_cat = rec_list[column].cat_ID
-
-                # Pull the 'hit' out of the score matrix
-                if (primary_cat == secondary_cat):
-                    hit = hit + score_matrix[row][column]
-                    hit_count = hit_count + 1
-                else:
-                    miss = miss + score_matrix[row][column]
-                    miss_count = miss_count + 1
-
-    try:
-        print("Hits: {0}; Avg. Hit: {1}".format(hit_count, hit/hit_count))
-    except ZeroDivisionError:
-        print("Hits: 0; Avg. Miss: 0")
-
-    try:
-        print("Misses: {0}; Avg. Miss: {1}".format(miss_count, miss/miss_count))
-    except ZeroDivisionError:
-        print("Misses: 0; Avg. Miss: 0")
-################################################################################
-def markov_cluster(mark_array):
-    
-    # Send square matrix to markov clustering algorithm
-    result = mc.run_mcl(mark_array, inflation = 1.5)
-    # run MCL with default parameters
-    clusters = mc.get_clusters(result)
-    #print("results of cluster: ", result)
-    print("clusters: ", clusters)
-    cluster_array = []
-    cluster_array = np.asarray(clusters)
-    print("size of cluster: ", cluster_array.shape)
-    
-    # Test to choose the best inflation point
-    # for inflation in [i/10 for i in range (15,26)]:
-    #     result = mc.run_mcl(mark_array, inflation = inflation)
-    #     clusters = mc.get_clusters(result)
-    #     q = mc.modularity(mark_array=result, clusters=clusters)
-    #     print("Inflation: ", inflation, "modularity: ", q)
-    
-    #mc.draw_graph(mark_array, clusters, node_size=50, with_labels=True, edge_color="silver")   
-    print("Successful MCL")
 
 ################################################################################
 def normailze_matrix(score_matrix):
@@ -338,90 +146,10 @@ def normailze_matrix(score_matrix):
 
     # add identity matrix
     score_matrix = score_matrix + np.identity(len(score_matrix[1]))
-    
-    # sending score matrix with true values to MCL
-    markov_cluster(score_matrix_copy)
 
     return score_matrix
 
-################################################################################
-def write_matches(kp_1, kp_2, good_points, primary_image, secondary_image, image_destination):
-    'This function takes the output of the KNN matches and draws all the matching points'
-    'between the two images. Writes the final product to the output directory'
-    
 
-    # parameters to pass into drawing function
-    draw_params = dict(matchColor = (0,255,0),
-                       singlePointColor = (255,0,0),
-                       flags = 0)
-
-    # draw the matches between two upper pictures and horizontally concatenate
-    result = cv2.drawMatches(
-        primary_image.image,
-        kp_1,
-        secondary_image.image,
-        kp_2,
-        good_points,
-        None,
-        **draw_params) # draw connections
-
-    # use the cv2.drawMatches function to horizontally concatenate and draw no
-    # matching lines. this creates the clean bottom images.
-    result_clean = cv2.drawMatches(
-        primary_image.image,
-        None,
-        secondary_image.image,
-        None,
-        None,
-        None) # don't draw connections
-
-    # This code is Ross Pitman. I dont exactly know what all the constants are but they
-    # create the border and do more image preprocessing
-    row, col= result.shape[:2]
-    bottom = result[row-2:row, 0:col]
-    bordersize = 5
-    result_border = cv2.copyMakeBorder(
-        result,
-        top = bordersize,
-        bottom = bordersize,
-        left = bordersize,
-        right = bordersize,
-        borderType = cv2.BORDER_CONSTANT, value = [0,0,0] )
-
-    # same as above
-    row, col= result_clean.shape[:2]
-    bottom = result_clean[row-2:row, 0:col]
-    bordersize = 5
-    result_clean_border = cv2.copyMakeBorder(
-        result_clean,
-        top = bordersize,
-        bottom = bordersize,
-        left = bordersize,
-        right = bordersize,
-        borderType = cv2.BORDER_CONSTANT, value = [0,0,0] )
-
-    # vertically concatenate the matchesDrawn and clean images created before.
-    result_vertical_concat = np.concatenate(
-        (result_border, result_clean_border),
-        axis = 0)
-
-    # Take the image_destination and turn it into a Path object.
-    # Then add the image names to the new path.
-    # # TODO: For some reason it says the 'image_destination' object is
-    #           a str type at this point in the program even though it is not.
-    #           Look into why.
-    #image_path = image_destination.joinpath(str(len(good_points)) +
-    #"___" +
-    #re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
-    #"___" +
-    #re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title))
-    #)
-    image_path2 = (re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
-        "___" + re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title)))
-    image_path = (image_destination + "/" + str(len(good_points)) + "___" + str(image_path2))
-
-    # Finally, write the finished image to the output folder.
-    cv2.imwrite(str(image_path), result_vertical_concat, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 ################################################################################
 def score_boosting(primary_image, secondary_image, good_points, parameters):
     'uses image characteristics to boost scores'
@@ -463,41 +191,6 @@ def edge_sharpening(image):
     
     return sharp_image
 ################################################################################
-def red(intensity):
-    iI = intensity
-    i_min = 86
-    i_max = 230
-    
-    o_min = 0
-    o_max = 255
-    
-    #io = ((iI-i_min)/(i_max-i_min))*255
-    io = (iI-i_min)*(((o_max-o_min)/(i_max - i_min)) + o_min)
-    return io
-
-def green(intensity):
-    iI = intensity
-    i_min = 90
-    i_max = 225
-    
-    o_min = 0
-    o_max = 255
-    
-    #io = ((iI-i_min)/(i_max-i_min))*255
-    io = (iI-i_min)*(((o_max-o_min)/(i_max - i_min)) + o_min)
-    return io
-
-def blue(intensity):
-    iI = intensity
-    i_min = 100
-    i_max = 210
-    
-    o_min = 0
-    o_max = 255
-    
-    #io = ((iI-i_min)/(i_max-i_min))*255
-    io = (iI-i_min)*(((o_max-o_min)/(i_max - i_min)) + o_min)
-    return io
 
 
 def filter_images(primary_image,image_source,edited_source):
@@ -530,20 +223,6 @@ def filter_images(primary_image,image_source,edited_source):
         else:
             flag = 1
             print("night")
-            
-            
-            # img = Image.open(image_source)
-
-            # multi = img.split()
-            # red_band = multi[0].point(red)
-            # green_band = multi[1].point(green)
-            # blue_band = multi[2].point(blue)
-
-            # normal_img = Image.merge("RGB",(red_band, green_band, blue_band))
-            # #normal_img.show()
-            # save_image = normal_img
-            # save_image.save(image_source, "JPEG")
-            #normal_img.save(image_source, "JPEG")
 
             save_image = np.copy(primary_image)
             image_path = image_source
@@ -564,16 +243,89 @@ def filter_images(primary_image,image_source,edited_source):
             # cv2.waitKey(0)
             break
         i += 1
-    
+
 ################################################################################
-def call_cluster(arr):
-    
-    # Normalizing the descriptor values before being sent to MCL
-    max_num = arr.max()
-    arr = arr/max_num
-    markov_cluster(arr)
+
+def write_matches(kp_1, kp_2, good_points, primary_image, secondary_image, image_destination):
+    'This function takes the output of the KNN matches and draws all the matching points'
+    'between the two images. Writes the final product to the output directory'
     
 
+    # parameters to pass into drawing function
+    draw_params = dict(matchColor = (0,255,0),
+                       singlePointColor = (255,0,0),
+                       flags = 0)
+
+
+    # draw the matches between two upper pictures and horizontally concatenate
+    result = cv2.drawMatches(
+        primary_image.image,
+        kp_1,
+        secondary_image.image,
+        kp_2,
+        good_points,
+        None,
+        **draw_params) # draw connections
+
+    # use the cv2.drawMatches function to horizontally concatenate and draw no
+    # matching lines. this creates the clean bottom images.
+    result_clean = cv2.drawMatches(
+        primary_image.image,
+        None,
+        secondary_image.image,
+        None,
+        None,
+        None) # don't draw connections
+    
+    # This code is Ross Pitman. I dont exactly know what all the constants are but they
+    # create the border and do more image preprocessing
+    row, col= result.shape[:2]
+    bottom = result[row-2:row, 0:col]
+    bordersize = 5
+    result_border = cv2.copyMakeBorder(
+        result,
+        top = bordersize,
+        bottom = bordersize,
+        left = bordersize,
+        right = bordersize,
+        borderType = cv2.BORDER_CONSTANT, value = [0,0,0] )
+	
+    # same as above
+    row, col= result_clean.shape[:2]
+    bottom = result_clean[row-2:row, 0:col]
+    bordersize = 5
+    result_clean_border = cv2.copyMakeBorder(
+        result_clean,
+        top = bordersize,
+        bottom = bordersize,
+        left = bordersize,
+        right = bordersize,
+        borderType = cv2.BORDER_CONSTANT, value = [0,0,0] )
+	
+    # vertically concatenate the matchesDrawn and clean images created before.
+    result_vertical_concat = np.concatenate(
+        (result_border, result_clean_border),
+        axis = 0)
+
+    # Take the image_destination and turn it into a Path object.
+    # Then add the image names to the new path.
+    # # TODO: For some reason it says the 'image_destination' object is
+    #           a str type at this point in the program even though it is not.
+    #           Look into why.
+    """image_path = image_destination.joinpath(str(len(good_points)) +
+    "___" +
+    re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
+    "___" +
+    re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title)))
+    """
+
+    image_path2 = (re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
+                   "___" + re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title)))
+    image_path = (image_destination + "/" + str(len(good_points)) + "___" + str(image_path2))
+
+    # Finally, write the finished image to the output folder.
+    cv2.imwrite(str(image_path), result_vertical_concat, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+	
 ################################################################################
 def match(primary_images, secondary_images, image_destination,
             start_i, score_matrix, write_threshold, parameters):
@@ -679,32 +431,17 @@ def match(primary_images, secondary_images, image_destination,
 
                      # only do image processing if number of good points
                      # exceeeds threshold
+                     
                      if len(good_points) > write_threshold:
                          write_matches(kp_1, kp_2, good_points,
                             primary_images[primary_count], secondary_images[secondary_count],
                             image_destination)
+                    
 
                  except cv2.error as e:
                      print('\n\t\tERROR: {0}\n'.format(e))
                      print("\t\tError matching: " + os.path.basename(primary_images[primary_count].image_title) +
                          " and " + os.path.basename(secondary_images[secondary_count].image_title) + "\n")
-    
-
-
-    final_array = np.asarray(descriptors_MCL)
-
-    x,y = final_array.shape
-    size = x-y
- 
-    one_array = np.ones((x,size))
-    
-    resize_amt = math.floor(math.sqrt(x*y))
-    new_array = np.resize(final_array,(resize_amt,resize_amt))
-    call_cluster(new_array)
-    
-    # Markov clustering with one filled array to square matrix
-    mark_array = np.hstack((final_array, one_array))
-    #markov_cluster(mark_array)
     
     return score_matrix
 
@@ -795,6 +532,9 @@ def crop(event, x, y, flags, param):
         cv2.rectangle(param, ref_points[0], ref_points[1], (0, 255, 0), 2)
         cv2.imshow("image", param)
 
+
+################################################################################
+###########        TEMPLATE FUNCTIONS 			 ###############################
 ################################################################################
 def manual_roi(rec_list, image_source):
 
@@ -1043,50 +783,60 @@ def add_templates(rec_list, template_source):
 
     return rec_list
 
+################################################################################
+################## 			TESTING FUNCTIONS 				 ###################
+################################################################################
+def test_accuracy(rec_list, score_matrix, threshold):
+
+    # True positive: number of times a match was correctly classified as a match
+    TP = 0 
+    # False negative: number of times a correct match was dismissed as not a match
+    FN = 0 
+    # False positive:  number of times two image were incorrectly matched
+    FP = 0 
+    # True negative: the number of matches that were corectly dismissed as not matches
+    TN = 0 
+
+    # traverse rows
+    for row in range(score_matrix.shape[0]):
+        primary_cat = rec_list[row].cat_ID
+        primary_title = rec_list[row].image_title
+
+        # traverse columns
+        for column in range(score_matrix.shape[1]):
+            # leave out the diagonal 
+            if (row != column):
+                secondary_cat = rec_list[column].cat_ID
+
+                if (score_matrix[row][column] > threshold and primary_cat == secondary_cat):
+                    TP = TP + 1
+                elif (score_matrix[row][column] <= threshold and primary_cat == secondary_cat):
+                    FN = FN + 1
+                elif (score_matrix[row][column] > threshold and primary_cat != secondary_cat):
+                    FP = FP + 1
+                else:
+                    TN = TN + 1
+
+    accuracy = ((TP+FP) / (TP+FP+TN+FN)) * 100
+    recall = (TP) / (TP+FN)
+    specificity = (TN) / (TN+FP)
+    precision = (TP) / (TP+FP)
+
+
+    print("\n\n")
+    print("Hits:",TP)
+    print("Misses:", FN)
+    print("Missclassifications:", FP)
+    print("\n")
+    print("Accuracy:", accuracy)
+    print("Recall/Sensitivity:", recall)
+    print("Specificity:", specificity)
+    print("Precision:", precision)
+
 
 ################################################################################
-def getTitleChars(title):
-    'Used to pull the characteristics out of the image title name'
-    title_chars = title.split("__")
-    station = title_chars[1]
-    camera = title_chars[2]
-    date = title_chars[3]
-    # dont want the last 7 characters
-    time = title_chars[4][:-7]
-
-    return station, camera, date, time
+################## 			MAIN 			 				 ###################
 ################################################################################
-def init_Recognition(image_source, template_source):
-    'Used to initalize a recongition object for each template/image pair'
-    # # TODO: create a function that verifies the image and template names match
-
-    rec_list = []
-    count = 0
-
-    # add images and templates in a parallel for-loop
-    for i in glob.iglob(str(image_source)):
-
-        # add new Recognition object to list
-        rec_list.append(Recognition())
-
-        # add image title and image to object
-        image = cv2.imread(i)
-        
-        rec_list[count].add_image(i, image)
-        #rec_list[count].add_template(rec_list, template_source)
-
-        #filter_images(image,i,str(paths['edited_photos']))
-
-        # get title characteristics
-        station, camera, date, time = getTitleChars(i)
-        rec_list[count].add_title_chars(station, camera, date, time)
-
-        # increment count
-        count = count + 1
-
-    # return the list of recognition objects
-    return rec_list
-
 if __name__ == "__main__":
 
     config = configparser.ConfigParser()
@@ -1152,15 +902,7 @@ if __name__ == "__main__":
     # write the score matrix to a .csv file
     print("\n\tWriting score_matrix to 'score_matrix.csv' to the destination folder...\n")
     np.savetxt(paths['destination']+'/score_matrix.csv', score_matrix, delimiter = ",")
-
-
-    # check matrix for average hit/miss scores
-    if (paths['cluster'] != None):
-        print("Checking matrix...")
-        check_matrix(rec_list, score_matrix)
-    
-    kmeans_score_matrix(paths['score_matrixCSV'])
-    
+        
     end = time.time()
     
     print("\tTime took to run: " + str((end - start)))
