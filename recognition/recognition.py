@@ -72,7 +72,7 @@ if __name__ == "__main__":
     start = time.time()
     for rec in rec_list:
         rec.calculate_kp()
-    score_matrix = match.match_multi(rec_list, paths['destination'], n_threads, write_threshold, parameters)
+    score_matrix = match.match_multi(rec_list, paths['destination'], parameters)
     print("Type kp:", type(rec_list[0].key_points))
     print("Type desc:", type(rec_list[0].kp_desc))
 
