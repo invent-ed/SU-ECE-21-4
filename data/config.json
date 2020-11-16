@@ -1,6 +1,6 @@
 {
   "config" : {
-    "templating": "2",
+    "templating": "1",
     "ransac": "0"
   },
   "score_boosting" : {

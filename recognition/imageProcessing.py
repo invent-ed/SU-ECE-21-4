@@ -82,9 +82,7 @@ def filter_images(primary_image,image_source,edited_source):
             gray = cv2.cvtColor(primary_image, cv2.COLOR_BGR2GRAY)
             threshold = variance_of_laplacian(gray)
 
-            if(threshold < 1500):
-                print("not blurry")
-            else:
+            if(threshold >= 1500):
                 print("blurry")
         else:
             flag = 1
