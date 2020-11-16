@@ -103,19 +103,8 @@ def match(primary_image, secondary_image, image_destination,
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
 
-    #write_matches(primary_image, secondary_image, strong_matches, image_destination)
+    write_matches(primary_image, secondary_image, strong_matches, image_destination)
     return len(strong_matches)
-
-################################################################################
-def slice_generator(
-        sequence_length,
-        n_blocks):
-    """ Creates a generator to get start/end indexes for dividing a
-        sequence_length into n blocks
-    """
-    return ((int(round((b - 1) * sequence_length/n_blocks)),
-             int(round(b * sequence_length/n_blocks)))
-            for b in range(1, n_blocks+1))
 
 
 ################################################################################
