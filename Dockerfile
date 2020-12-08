@@ -1,4 +1,4 @@
-FROM jjanzic/docker-python3-opencv
+FROM jjanzic/docker-python3-opencv:contrib-opencv-4.0.1
 WORKDIR /app
 COPY requirements.txt /app
 RUN pip install --upgrade pip
