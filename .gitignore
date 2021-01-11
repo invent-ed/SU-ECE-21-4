@@ -1,16 +1,17 @@
 **/.DS_Store
+**/__pycache__
 .idea
 
-data/edited/*
-!data/images/.gitkeep
+data/filtered_images/*
+!data/filtered_images/.gitkeep
 data/images/*
 !data/images/.gitkeep
+data/masks/*
+!data/masks/.gitkeep
+data/keypoints/*
+!data/keypoints/.gitkeep
 data/results/*
 !data/results/.gitkeep
-data/templates/*
-!data/templates/.gitkeep
-data/mrcnn_templates/*
-!data/mrcnn_templates/.gitkeep
 
 recognition/mask_rcnn
 data/logs

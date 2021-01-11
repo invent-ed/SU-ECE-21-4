@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read("config.ini")
-    args = config['default']
+    args = config['edward']
 
     paths = dict()
     paths['images'] = args['image_source']

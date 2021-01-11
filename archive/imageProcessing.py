@@ -89,12 +89,10 @@ def filter_images(primary_image,image_source,edited_source):
             print("night")
 
             save_image = np.copy(primary_image)
-            image_path = image_source
-            image_path = image_path.split("\\")
 
             num = image_path.index('images')
             # Writing original image to folder and editing copy
-            edited_source = edited_source + "\\" + image_path[num+1]
+            edited_source = edited_source + "/" + image_path.split("/")[-1]
             cv2.imwrite(edited_source,primary_image)
             
             sharp_image = edge_sharpening(save_image)

@@ -33,7 +33,7 @@ class Recognition:
     	self.station = title_chars[1]
     	self.camera = title_chars[2]
     	self.date = title_chars[3]
-    	self.time = title_chars[4][:-7]
+    	self.time = title_chars[4][:-7] # warning: not sure why excluding last 7 characters
 
     def add_cat_ID(self, cat):
         self.cat_ID = cat
