@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from AbstractBaseClass.Image import Image
 
 
-class Mask(Image):
+class MaskImage(Image):
 
     def __init__(self, mask_path):
         self.path = mask_path

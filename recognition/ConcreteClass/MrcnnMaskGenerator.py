@@ -4,7 +4,7 @@ import tensorflow as tf
 import mask_rcnn.mrcnn.model as modellib
 from mask_rcnn.samples.snow_leopard import snow_leopard
 from AbstractBaseClass.MaskGenerator import MaskGenerator
-from ConcreteClass.Mask import Mask
+from ConcreteClass.MaskImage import MaskImage
 
 
 class MrcnnMaskGenerator(MaskGenerator):
@@ -54,8 +54,8 @@ class MrcnnMaskGenerator(MaskGenerator):
         mask_path = self.generate_mask_path(imageObj.filename)
         if not os.path.isfile(mask_path):
             mask = self.generate_mask(imageObj)
-            Mask.save_mask_to_file(mask_path, mask)
-        return Mask(mask_path)
+            MaskImage.save_mask_to_file(mask_path, mask)
+        return MaskImage(mask_path)
 
     def generate_mask_path(self, filename):
         mask_dir = self.config.get("Mask.directory")
@@ -64,5 +64,5 @@ class MrcnnMaskGenerator(MaskGenerator):
 
     def generate_mask(self, imageObj):
         masks = np.array(self.model.detect([imageObj.image], verbose=1)[0]['masks'])
-        mask = Mask.collapse_color_channels(masks)
+        mask = MaskImage.collapse_color_channels(masks)
         return mask
