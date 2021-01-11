@@ -44,7 +44,7 @@ class MrcnnMaskGenerator(MaskGenerator):
         self.dataset.prepare()
 
     def load_mrcnn_model(self):
-        model_dir = self.config.get("Mask.mrcnn.model_dir")
+        model_dir = self.config.get("Mask.mrcnn.model_directory")
         weights_path = self.config.get("Mask.mrcnn.weights_path")
         with tf.device(self.config.get("Mask.mrcnn.device")):
             self.model = modellib.MaskRCNN(mode="inference", model_dir=model_dir, config=self.mrcnn_config)
