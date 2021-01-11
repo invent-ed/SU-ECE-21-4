@@ -1,8 +1,6 @@
 import os
 import cv2
-import numpy as np
 from AbstractBaseClass.KeypointsGenerator import KeypointsGenerator
-from ConcreteClass.Mask import Mask
 from ConcreteClass.SiftKeypoints import SiftKeypoints
 
 
@@ -20,24 +18,28 @@ class SiftKeypointsGenerator(KeypointsGenerator):
             os.makedirs(sift_dir)
 
     def generate_keypoints_if_not_exist(self, imageObj):
-        mask_path = self.maskGenerator.generate_mask_path(imageObj.filename)
+        maskObj = self.get_mask_if_mask_generator_exists(imageObj)
         kps_path = self.generate_kps_path(imageObj.filename)
-        if not os.path.isfile(mask_path) or not os.path.isfile(kps_path):
-            keypoints, descriptors, maskObj = self.generate_keypoints(imageObj)
+        if not os.path.isfile(kps_path):
+            keypoints, descriptors = self.generate_keypoints(imageObj, maskObj)
             SiftKeypoints.save_keypoints_to_file(kps_path, keypoints, descriptors)
-        maskObj = Mask(mask_path) if self.maskGenerator is not None else None
         return SiftKeypoints(kps_path, maskObj)
+
+    def get_mask_if_mask_generator_exists(self, imageObj):
+        if self.maskGenerator is not None:
+            maskObj = self.maskGenerator.generate_mask_if_not_exist(imageObj)
+        else:
+            maskObj = None
+        return maskObj
 
     def generate_kps_path(self, filename):
         kp_dir = self.config.get("Keypoints.directory")
         kp_ext = self.config.get("Keypoints.file_extension")
         return os.path.abspath(kp_dir).replace("\\", "/") + "/" + filename + kp_ext
 
-    def generate_keypoints(self, imageObj):
-        if self.maskGenerator is None:
-            maskObj = None
-            keypoints, descriptors = self.sift.detectAndCompute(imageObj.image)
-        else:
-            maskObj = self.maskGenerator.generate_mask_if_not_exist(imageObj)
+    def generate_keypoints(self, imageObj, maskObj=None):
+        if maskObj is not None:
             keypoints, descriptors = self.sift.detectAndCompute(imageObj.image, maskObj.mask)
-        return keypoints, descriptors, maskObj
+        else:
+            keypoints, descriptors = self.sift.detectAndCompute(imageObj.image)
+        return keypoints, descriptors
