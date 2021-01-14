@@ -1,5 +1,6 @@
 import cv2
 import pickle
+import logging
 from AbstractBaseClass.Keypoints import Keypoints
 
 
@@ -14,6 +15,7 @@ class SiftKeypoints(Keypoints):
 
     @staticmethod
     def save_keypoints_to_file(kps_path, kps, descs):
+        logging.info("Saving keypoints to file")
         kps_and_descs_list = []
         for kp, desc in zip(kps, descs):
             kp_and_desc = (kp.pt, kp.size, kp.angle, kp.response, kp.octave, kp.class_id, desc)
@@ -24,6 +26,7 @@ class SiftKeypoints(Keypoints):
         del kps_and_descs_list[:]
 
     def load_keypoints_from_file(self, kps_path):
+        logging.info("Loading keypoints from file")
         pickle_file = open(kps_path, "rb")
         kps_and_descs_list = pickle.load(pickle_file)
         for kp_and_desc in kps_and_descs_list:

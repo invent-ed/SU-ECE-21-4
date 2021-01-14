@@ -1,5 +1,6 @@
 import os
 import cv2
+import logging
 from AbstractBaseClass.KeypointsGenerator import KeypointsGenerator
 from ConcreteClass.SiftKeypoints import SiftKeypoints
 

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import logging
 from AbstractBaseClass.Image import *
 
 
@@ -19,23 +20,28 @@ class SnowLeopardImage(Image):
 
     @staticmethod
     def save_image_to_file(image_path, image):
+        logging.info("Saving image to file")
         cv2.imwrite(image_path, image)
 
     def set_path(self, image_path):
+        logging.info("Setting image path")
         self.path = image_path
         self.load_image_from_file(image_path)
         self.extract_filename_and_extension(image_path)
         self.extract_camera_trap_info(self.filename)
 
     def load_image_from_file(self, image_path):
+        logging.info("Loading image from file")
         self.image = np.array(cv2.imread(image_path))
 
     def extract_filename_and_extension(self, image_path):
+        logging.info("Extracting filename and extension of image")
         filename_and_ext = image_path.split("/")[-1]
         self.filename = filename_and_ext[:-4]
         self.ext = filename_and_ext[-4:]
 
     def extract_camera_trap_info(self, filename):
+        logging.info("Extracting camera trap info")
         camera_info = filename.split("__")
         self.station = camera_info[1]
         self.camera = camera_info[2]
@@ -43,5 +49,6 @@ class SnowLeopardImage(Image):
         self.time = camera_info[4]
 
     def display(self):
+        logging.info("Displaying image")
         plt.imshow(self.image)
         plt.show()
