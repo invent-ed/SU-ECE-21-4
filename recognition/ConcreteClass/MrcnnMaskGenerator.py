@@ -55,6 +55,7 @@ class MrcnnMaskGenerator(MaskGenerator):
         if not os.path.isfile(mask_path):
             mask = self.generate_mask(imageObj)
             MaskImage.save_mask_to_file(mask_path, mask)
+            mask = None
         return MaskImage(mask_path)
 
     def generate_mask_path(self, filename):

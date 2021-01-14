@@ -1,5 +1,7 @@
 import os
 import glob
+import logging
+from time import localtime, strftime
 from collections import namedtuple
 from ConcreteClass.JsonConfig import JsonConfig
 from ConcreteClass.SnowLeopardImage import SnowLeopardImage
@@ -9,6 +11,8 @@ from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
 
 def main():
 
+    setup_logger()
+
     config = JsonConfig("config.json")
     maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
@@ -17,12 +21,17 @@ def main():
     rec_list = []
 
     for image_path in list_of_images(config):
-        print("PROCESSING:", image_path)
+        print("PROCESSING IMAGE:", image_path)
+        logging.info("PROCESSING IMAGE: " + image_path)
         imageObj = SnowLeopardImage(image_path)
         siftObj = keypointsGenerator.generate_keypoints_if_not_exist(imageObj)
         rec_list.append(Recognition(imageObj, siftObj))
 
-    rec_list[3]
+
+def setup_logger():
+    FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
+    FILENAME = "data/logs/log_" + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + ".log"
+    logging.basicConfig(format=FORMAT, filename=FILENAME, level=logging.DEBUG)
 
 
 def list_of_images(config):
