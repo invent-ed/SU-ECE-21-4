@@ -13,7 +13,7 @@ def main():
 
     setup_logger()
 
-    config = JsonConfig("config.json")
+    config = JsonConfig("data/config.json")
     maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
 
