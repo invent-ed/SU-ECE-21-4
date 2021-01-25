@@ -22,12 +22,15 @@ class SiftKeypointsGenerator(KeypointsGenerator):
 
     def generate_keypoints_if_not_exist(self, imageObj):
         logging.info("Generating sift keypoints")
-        maskObj = self.get_mask_if_mask_generator_exists(imageObj)
+        maskObj = None
         kps_path = self.generate_kps_path(imageObj.filename)
         if not os.path.isfile(kps_path):
+            maskObj = self.get_mask_if_mask_generator_exists(imageObj)
             keypoints, descriptors = self.generate_keypoints(imageObj, maskObj)
             SiftKeypoints.save_keypoints_to_file(kps_path, keypoints, descriptors)
         return SiftKeypoints(kps_path, maskObj)
+        
+
 
     def get_mask_if_mask_generator_exists(self, imageObj):
         logging.info("Getting mask in the keypoint generator.")

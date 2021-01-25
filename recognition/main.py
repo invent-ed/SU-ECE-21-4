@@ -1,6 +1,7 @@
 import os
 import glob
 import logging
+import cv2
 from time import localtime, strftime
 from collections import namedtuple
 from ConcreteClass.JsonConfig import JsonConfig
@@ -24,8 +25,52 @@ def main():
         print("PROCESSING IMAGE:", image_path)
         logging.info("PROCESSING IMAGE: " + image_path)
         imageObj = SnowLeopardImage(image_path)
+        #storeMasks = 1
         siftObj = keypointsGenerator.generate_keypoints_if_not_exist(imageObj)
-        rec_list.append(Recognition(imageObj, siftObj))
+        rec_list.append(siftObj)
+   
+    for i in rec_list:
+        for j in rec_list:
+            if i != j:
+                num_strong_matches = match(i,j)
+                print(num_strong_matches)
+
+
+def write_matches(primary_image, secondary_image, strong_matches, image_destination):
+
+    kp1 = primary_image.key_points
+    kp2 = secondary_image.key_points
+
+    draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = None,
+                   flags = cv2.DrawMatchesFlags_DEFAULT)
+
+    matches_drawn = cv2.drawMatches(primary_image.image, kp1, secondary_image.image, kp2, strong_matches, None, **draw_params)
+
+    image_path2 = (re.sub(".jpg", "", os.path.basename(primary_image.image_title)) +
+                   "___" + re.sub(".jpg", ".JPG", os.path.basename(secondary_image.image_title)))
+    image_path = (image_destination + "/" + str(image_path2))
+
+    cv2.imwrite(str(image_path),matches_drawn, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+
+
+def match(primary_sift, secondary_sift):
+
+    FLANN_INDEX_KDTREE = 0
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+    search_params = dict()   # or pass empty dictionary
+    flann = cv2.FlannBasedMatcher(index_params,search_params)
+    matches = flann.knnMatch(primary_sift.descriptors,secondary_sift.descriptors,k=2)
+
+    # ratio test as per Lowe's paper
+    strong_matches = []
+    for m, n in matches:
+        if m.distance < 0.7 * n.distance:
+            strong_matches.append(m)
+
+    #write_matches(primary_image, secondary_image, strong_matches, image_destination)
+    return len(strong_matches)
 
 
 def setup_logger():
