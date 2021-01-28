@@ -2,6 +2,7 @@ import os
 import glob
 import logging
 import cv2
+import csv
 from time import localtime, strftime
 from collections import namedtuple
 from ConcreteClass.JsonConfig import JsonConfig
@@ -28,18 +29,20 @@ def main():
         #storeMasks = 1
         siftObj = keypointsGenerator.generate_keypoints_if_not_exist(imageObj)
         rec_list.append(siftObj)
-   
+        
+        
     for i in rec_list:
         for j in rec_list:
             if i != j:
-                num_strong_matches = match(i,j)
+                num_strong_matches = match(config,i,j)
                 print(num_strong_matches)
 
 
+    
 def write_matches(primary_image, secondary_image, strong_matches, image_destination):
 
-    kp1 = primary_image.key_points
-    kp2 = secondary_image.key_points
+    kp1 = primary_image.keypoints
+    kp2 = secondary_image.keypoints
 
     draw_params = dict(matchColor = (0,255,0),
                    singlePointColor = (255,0,0),
@@ -55,7 +58,7 @@ def write_matches(primary_image, secondary_image, strong_matches, image_destinat
     cv2.imwrite(str(image_path),matches_drawn, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
 
-def match(primary_sift, secondary_sift):
+def match(config, primary_sift, secondary_sift):
 
     FLANN_INDEX_KDTREE = 0
     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
@@ -68,8 +71,13 @@ def match(primary_sift, secondary_sift):
     for m, n in matches:
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
-
-    #write_matches(primary_image, secondary_image, strong_matches, image_destination)
+    
+    #with open(config.get("results.matching_data"), 'a', newline='') as csvfile:
+    writer = csv.writer(open(config.get("results.matching_data"),'a'))
+    writer.writerow([primary_sift.path,secondary_sift.path,len(strong_matches)])
+        
+    results_dir = config.get("results.directory")
+    #write_matches(primary_sift, secondary_sift, strong_matches, results_dir)
     return len(strong_matches)
 
 
