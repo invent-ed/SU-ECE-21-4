@@ -78,6 +78,32 @@ def match(config, primary_sift, secondary_sift):
     write_matches(primary_sift, secondary_sift, strong_matches, results_dir)
     return len(strong_matches)
 
+def ransac(kp1, kp2, strong_matches):
+	MIN_MATCH_COUNT = 10
+    if len(strong_matches)>MIN_MATCH_COUNT:
+    	src_pts = np.float32([ kp1[m.queryIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+    	dst_pts = np.float32([ kp2[m.trainIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+    	
+    	M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+    	matchesMask = mask.ravel().tolist()
+
+    	#h,w,d = img1.shape
+    	#pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+    	#dst = cv2.perspectiveTransform(pts,M)
+    	#img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+
+    	best_matches = []
+    	for index, maskI in enumerate(matchesMask):
+    		if maskI == 1:
+    			best_matches.append(strong_matches[index])
+    	del strong_matches[:]
+    	strong_matches = best_matches 
+
+    else:
+    	print( "Not enough matches are found - {}/{}".format(len(strong_matches), MIN_MATCH_COUNT) )
+    	matchesMask = None
+
+   	return strong_matches
 
 def setup_logger():
     FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
