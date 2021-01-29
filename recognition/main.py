@@ -26,7 +26,6 @@ def main():
         print("PROCESSING IMAGE:", image_path)
         logging.info("PROCESSING IMAGE: " + image_path)
         imageObj = SnowLeopardImage(image_path)
-        #storeMasks = 1
         siftObj = keypointsGenerator.generate_keypoints_if_not_exist(imageObj)
         rec_list.append(siftObj)
         
@@ -72,12 +71,11 @@ def match(config, primary_sift, secondary_sift):
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
     
-    #with open(config.get("results.matching_data"), 'a', newline='') as csvfile:
     writer = csv.writer(open(config.get("results.matching_data"),'a'))
     writer.writerow([primary_sift.path,secondary_sift.path,len(strong_matches)])
         
     results_dir = config.get("results.directory")
-    #write_matches(primary_sift, secondary_sift, strong_matches, results_dir)
+    write_matches(primary_sift, secondary_sift, strong_matches, results_dir)
     return len(strong_matches)
 
 
