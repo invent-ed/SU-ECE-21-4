@@ -29,7 +29,8 @@ def main():
         print("LOADING KEYPOINTS:", kps_path)
         logging.info("LOADING KEYPOINTS: " + kps_path)
         kpsObj = SiftKeypoints(kps_path)
-        kps_list.append(kpsObj)
+        if kpsObj.length > 0:
+            kps_list.append(kpsObj)
 
     for primaryKpsObj in kps_list:
         for secondaryKpsObj in kps_list:

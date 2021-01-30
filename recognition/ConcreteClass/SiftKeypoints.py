@@ -10,6 +10,7 @@ class SiftKeypoints(Keypoints):
 
     def __init__(self, kps_path=None, maskObj=None):
         self.path = kps_path
+        self.length = None
         self.keypoints = []
         self.descriptors = []
         self.maskObj = maskObj
@@ -56,3 +57,4 @@ class SiftKeypoints(Keypoints):
             self.descriptors.append(desc)
             del kp_and_desc
         self.descriptors = np.asarray(self.descriptors)
+        self.length = len(self.descriptors)

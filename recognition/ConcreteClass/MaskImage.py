@@ -37,7 +37,7 @@ class MaskImage(Image):
 
     def load_mask_from_file(self, mask_path):
         logging.info("Loading mask from file")
-        self.mask = np.uint8(cv2.imread(mask_path, cv2.IMREAD_REDUCED_GRAYSCALE_8))
+        self.mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
 
     def display(self):
         logging.info("Displaying mask image")
