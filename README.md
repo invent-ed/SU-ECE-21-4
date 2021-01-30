@@ -8,7 +8,7 @@ This repository contains the software Recognition, which uses computer vision to
 
 1. Install Docker (https://docs.docker.com/get-docker/)
 2. Add photos of snow leopards (JPG) to "data/images"
-3. Add templates (BMP with 1-bit color depth) to "data/templates"
+3. Add masks (BMP with 1-bit color depth) to "data/masks"
     - Regions that contain a snow leopard should be white, and the rest black
 4. Edit "data/config.json" to desired configurations
 

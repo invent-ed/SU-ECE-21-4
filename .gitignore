@@ -13,7 +13,6 @@ data/keypoints/*
 data/results/*
 !data/results/.gitkeep
 
-recognition/mask_rcnn
 data/logs
 
 test/*

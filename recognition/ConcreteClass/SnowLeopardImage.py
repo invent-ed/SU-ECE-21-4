@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ from AbstractBaseClass.Image import *
 
 
 class SnowLeopardImage(Image):
-    def __init__(self, image_path, cat_id=None):
+    def __init__(self, image_path=None, cat_id=None):
         self.path = None
         self.image = None
         self.filename = None
@@ -16,14 +17,22 @@ class SnowLeopardImage(Image):
         self.date = None
         self.time = None
         self.cat_id = cat_id
-        self.set_path(image_path)
+        if image_path is not None:
+            self.load_image_and_metadata(image_path)
+
+    @staticmethod
+    def generate_image_path(config, filename):
+        logging.info("Generating image path")
+        img_dir = config.get("images.directory")
+        img_ext = config.get("images.file_extension")
+        return os.path.abspath(img_dir).replace("\\", "/") + "/" + filename + img_ext
 
     @staticmethod
     def save_image_to_file(image_path, image):
         logging.info("Saving image to file")
         cv2.imwrite(image_path, image)
 
-    def set_path(self, image_path):
+    def load_image_and_metadata(self, image_path):
         logging.info("Setting image path")
         self.path = image_path
         self.load_image_from_file(image_path)
@@ -35,10 +44,10 @@ class SnowLeopardImage(Image):
         self.image = np.array(cv2.imread(image_path))
 
     def extract_filename_and_extension(self, image_path):
-        logging.info("Extracting filename and extension of image")
-        filename_and_ext = image_path.split("/")[-1]
-        self.filename = filename_and_ext[:-4]
-        self.ext = filename_and_ext[-4:]
+        logging.info("Extracting filename and extension of image file")
+        base = os.path.basename(image_path)
+        self.filename = os.path.splitext(base)[0]
+        self.ext = os.path.splitext(base)[1]
 
     def extract_camera_trap_info(self, filename):
         logging.info("Extracting camera trap info")
