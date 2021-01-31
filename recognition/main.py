@@ -73,7 +73,7 @@ def match(config, primaryKpsObj, secondaryKpsObj):
 
     writer = csv.writer(open(config.get("results.matching_data"), 'a'))
     writer.writerow([primaryKpsObj.path, secondaryKpsObj.path, len(strong_matches)])
-    write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
+    # write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
 
     return len(strong_matches)
 

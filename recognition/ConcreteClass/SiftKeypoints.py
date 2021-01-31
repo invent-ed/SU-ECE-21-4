@@ -31,6 +31,8 @@ class SiftKeypoints(Keypoints):
     def save_keypoints_to_file(kps_path, kps, descs):
         logging.info("Saving keypoints to file")
         kps_and_descs_list = []
+        if descs is None:
+            descs = []
         for kp, desc in zip(kps, descs):
             kp_and_desc = (kp.pt, kp.size, kp.angle, kp.response, kp.octave, kp.class_id, desc)
             kps_and_descs_list.append(kp_and_desc)
