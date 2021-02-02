@@ -3,6 +3,7 @@ import glob
 import logging
 import cv2
 import csv
+import numpy as np
 from time import localtime, strftime
 from ConcreteClass.JsonConfig import JsonConfig
 from ConcreteClass.SnowLeopardImage import SnowLeopardImage
@@ -31,6 +32,10 @@ def main():
         kpsObj = SiftKeypoints(kps_path)
         if kpsObj.length > 0:
             kps_list.append(kpsObj)
+    
+    writer = csv.writer(open(config.get("results.matching_data"), 'a'))
+    header = ["Primary Image Filename", "Secondary Image Filename", "Num Strong Matches", "Average Distance", "Standard Deviation of Distances"]
+    writer.writerow(header)
 
     for primaryKpsObj in kps_list:
         for secondaryKpsObj in kps_list:
@@ -71,8 +76,17 @@ def match(config, primaryKpsObj, secondaryKpsObj):
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
 
+    distance_of_matches = []
+    for i in strong_matches:
+    	distance_of_matches.append(i.distance)
+    distance_of_matches.sort()
+    average = np.average(distance_of_matches)
+    standard_deviation = np.std(distance_of_matches)
+
+    matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
+
     writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-    writer.writerow([primaryKpsObj.path, secondaryKpsObj.path, len(strong_matches)])
+    writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
     # write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
 
     return len(strong_matches)
