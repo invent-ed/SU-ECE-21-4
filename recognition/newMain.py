@@ -17,38 +17,17 @@ def main():
     config = JsonConfig("data/config.json")
     maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
+ 
+    groups = group_by_metadata(list_of_images(config))
+   	for group in groups:
+   		findRepresentatives(group)
 
-    kps_list = []
-    for image_path in list_of_images(config):
-        filename = filename_without_ext(image_path)
-        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
-        if not os.path.isfile(kps_path):
-            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
-            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
-            imageObj = SnowLeopardImage(image_path)
-            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
-        logging.info("LOADING KEYPOINTS: " + kps_path)
-        kpsObj = SiftKeypoints(kps_path)
-        if kpsObj.length > 0:
-            kps_list.append(kpsObj)
-    
-    writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-    header = ["Primary Image Filename", "Secondary Image Filename", "Num Strong Matches", "Average Distance", "Standard Deviation of Distances"]
-    writer.writerow(header)
-
-    for i, primaryKpsObj in enumerate(kps_list):
-        for j, secondaryKpsObj in enumerate(kps_list):
-            if i>j:
-                num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
-                print("Number of strong matches: ", num_strong_matches)
-                logging.info("Number of strong matches: " + str(num_strong_matches))
 
 
 def setup_logger():
     FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
     FILENAME = "data/logs/log_" + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + ".log"
     logging.basicConfig(format=FORMAT, filename=FILENAME, level=logging.DEBUG)
-
 
 def list_of_images(config):
     images_dir = config.get("images.directory")
@@ -61,6 +40,41 @@ def filename_without_ext(file_path):
     base = os.path.basename(file_path)
     return os.path.splitext(base)[0]
 
+def find_representatives(group):
+	for i, filename in enumerate(group.filenames): 
+        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
+        if not os.path.isfile(kps_path):
+            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
+            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
+            imageObj = SnowLeopardImage(image_path)
+            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
+        logging.info("LOADING KEYPOINTS: " + kps_path)
+        if kpsObj.length > 100: 
+        	group.representative_indices.append(i)
+
+def match_groups(groups):
+	kps_list = []
+	for group in groups:
+	    for filename in group.filenames:
+	        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
+	        if not os.path.isfile(kps_path):
+	            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
+	            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
+	            imageObj = SnowLeopardImage(image_path)
+	            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
+	        logging.info("LOADING KEYPOINTS: " + kps_path)
+	        kpsObj = SiftKeypoints(kps_path)
+	        if kpsObj.length > 0:
+	            kps_list.append(kpsObj)
+
+    for i, primaryKpsObj in enumerate(kps_list):
+        for j, secondaryKpsObj in enumerate(kps_list):
+            if i>j:
+                num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
+                print("Number of strong matches: ", num_strong_matches)
+                logging.info("Number of strong matches: " + str(num_strong_matches))
+
+            #Then do some function that will group if conditions are meet
 
 def match(config, primaryKpsObj, secondaryKpsObj):
     FLANN_INDEX_KDTREE = 0
