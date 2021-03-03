@@ -15,14 +15,14 @@ class Group():
 	        representative_desc.append(descriptors)
 	    return representative_kps, representative_desc
 
-    def load_all_keypoints(self):
-    	all_kps = []
-    	all_desc = []
+    def find_number_of_keypoints_all_images(self):
+    	num_kps_all_images = []
     	for filename in filenames: 
-    		keypoints, descriptors = read_kps_desc_from_file(generate_keypoints_path(filename))
-	        all_kps.append(keypoints)
-	        all_desc.append(descriptors)
-	    return all_kps, all_desc
+			pickle_file = open(generate_keypoints_path(filename), "rb")
+        	kps_and_descs_list = pickle.load(pickle_file)
+        	pickle_file.close()
+	        num_kps_all_images.append(len(kps_and_descs_list))
+	    return num_kps_all_images
 
 	def read_kps_desc_from_file(self, kps_path):
 		keypoints = []
