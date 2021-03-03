@@ -10,7 +10,7 @@ from ConcreteClass.SnowLeopardImage import SnowLeopardImage
 from ConcreteClass.SiftKeypoints import SiftKeypoints
 from ConcreteClass.MrcnnMaskGenerator import MrcnnMaskGenerator
 from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
-
+from ConcreteClass.Group import 
 
 def main():
     setup_logger()
@@ -41,16 +41,8 @@ def filename_without_ext(file_path):
     return os.path.splitext(base)[0]
 
 def find_representatives(group):
-	for i, filename in enumerate(group.filenames): 
-        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
-        if not os.path.isfile(kps_path):
-            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
-            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
-            imageObj = SnowLeopardImage(image_path)
-            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
-        logging.info("LOADING KEYPOINTS: " + kps_path)
-        if kpsObj.length > 100: 
-        	group.representative_indices.append(i)
+
+    #initially keypoints  - mask - blurriness...
 
 def match_groups(groups):
 	kps_list = []
