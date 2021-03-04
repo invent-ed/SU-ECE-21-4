@@ -35,7 +35,93 @@ def list_of_images(config):
     path_list = list(glob.iglob(os.path.abspath(images_dir + "/*" + image_ext)))
     return [x.replace("\\", "/") for x in path_list]
 
-
+def group_by_metadata(config):
+    # while (going thru list)
+    #groups = defaultdict(list)
+    iterator = 1
+    list_of_groups = []
+    grouped_images= []
+    for image_path in list_of_images(config):
+        print("Loading image: " + image_path)
+        if iterator == 1:
+            # Create new empty list for images of similar metadata
+            grouped_images= []
+            # Add image to list
+            grouped_images.append(image_path)
+            station, camera, date, time = getTitleChars(image_path)
+            hour, minute, sec = getTimeChars(time)
+            prev_station = station
+            prev_camera = camera
+            prev_date = date
+            prev_hour = hour
+            prev_minute = minute
+            prev_sec = sec
+            iterator = iterator + 1
+        else:
+            # call getTitleChars to get metadata
+            station, camera, date, time = getTitleChars(image_path)
+            # Calculate time difference
+            hour, minute, sec = getTimeChars(time)
+            # Time Corrections
+            
+            # Exceptions if hour is near the edge
+            if (hour == 0 and prev_hour == 23):
+                hour += 24
+            if (hour == 23 and prev_hour == 0):
+                prev_hour += 24
+            
+            # if previous image is 1 hour behind
+            if (hour - prev_hour) == 1:
+                new_minute = minute + 60
+                time_difference = new_minute - prev_minute
+            # current image is 1 hour behind previous 
+            elif (prev_hour - hour) == 1:
+                new_minute = prev_minute + 60
+                time_difference = new_minute - prev_minute
+            # end of exception its in the same hour
+            elif (hour == prev_hour):
+                time_difference = minute - prev_minute
+            else:
+                time_difference = 10
+                
+            # Group by station, camera, date, and time (within 5 min)
+            if (station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6):   
+                grouped_images.append(image_path)
+                prev_station = station
+                prev_camera = camera
+                prev_date = date
+                prev_hour = hour
+                prev_minute = minute
+                prev_sec = sec
+                # If not, add list to Group, append Group to list, and create new list
+            else:
+                # Check if within five min if hour is one apart
+                #if (int(time[2:3]) - int(prev_time[2:3]) == 1) & (fixed_time-(int(prev_time[5:])) < 6):
+                    #grouped_images.append(image_path)
+                    #prev_station = station
+                    #prev_camera = camera
+                    #prev_date = date
+                    #prev_time = time
+                #else:
+                print(grouped_images)
+                newGroup = Group(config, grouped_images)
+                list_of_groups.append(newGroup)
+                # Create new list
+                grouped_images= []
+                # Add image to new list
+                grouped_images.append(image_path)
+                prev_station = station
+                prev_camera = camera
+                prev_date = date
+                prev_hour = hour
+                prev_minute = minute
+                prev_sec = sec
+   
+    print(grouped_images)
+    newGroup = Group(config, grouped_images)
+    list_of_groups.append(newGroup)
+    return list_of_groups
+    
 def filename_without_ext(file_path):
     base = os.path.basename(file_path)
     return os.path.splitext(base)[0]
