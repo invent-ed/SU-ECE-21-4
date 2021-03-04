@@ -10,7 +10,7 @@ from ConcreteClass.SnowLeopardImage import SnowLeopardImage
 from ConcreteClass.SiftKeypoints import SiftKeypoints
 from ConcreteClass.MrcnnMaskGenerator import MrcnnMaskGenerator
 from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
-from ConcreteClass.Group import 
+from ConcreteClass.Group import Group
 
 def main():
     setup_logger()
@@ -19,8 +19,8 @@ def main():
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
  
     groups = group_by_metadata(list_of_images(config))
-   	for group in groups:
-   		findRepresentatives(group)
+    for group in groups:
+        findRepresentatives(group)
 
 
 
@@ -45,19 +45,19 @@ def find_representatives(group):
     #initially keypoints  - mask - blurriness...
 
 def match_groups(groups):
-	kps_list = []
-	for group in groups:
-	    for filename in group.filenames:
-	        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
-	        if not os.path.isfile(kps_path):
-	            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
-	            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
-	            imageObj = SnowLeopardImage(image_path)
-	            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
-	        logging.info("LOADING KEYPOINTS: " + kps_path)
-	        kpsObj = SiftKeypoints(kps_path)
-	        if kpsObj.length > 0:
-	            kps_list.append(kpsObj)
+    kps_list = []
+    for group in groups:
+        for filename in group.filenames:
+            kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
+            if not os.path.isfile(kps_path):
+                print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
+                logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
+                imageObj = SnowLeopardImage(image_path)
+                keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
+            logging.info("LOADING KEYPOINTS: " + kps_path)
+            kpsObj = SiftKeypoints(kps_path)
+            if kpsObj.length > 0:
+                kps_list.append(kpsObj)
 
     for i, primaryKpsObj in enumerate(kps_list):
         for j, secondaryKpsObj in enumerate(kps_list):
@@ -83,7 +83,7 @@ def match(config, primaryKpsObj, secondaryKpsObj):
 
     distance_of_matches = []
     for i in strong_matches:
-    	distance_of_matches.append(i.distance)
+        distance_of_matches.append(i.distance)
     distance_of_matches.sort()
     average = np.average(distance_of_matches)
     standard_deviation = np.std(distance_of_matches)

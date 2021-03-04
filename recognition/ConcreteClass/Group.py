@@ -1,48 +1,33 @@
-class Group():
-	def __init__(self, config, groupNames):
-		self.config = config
-		self.filenames = groupNames
-		self.representative_indices = []
-		self.grouped_list_indices = []
+import pickle
+from ConcreteClass.MaskImage import MaskImage
+from ConcreteClass.SiftKeypoints import SiftKeypoints
 
-	#return keypoints of the actual representatives
-    def load_rep_keypoints(self):
-    	representative_kps = []
-    	representative_desc = []
-    	for i in representative_indices: 
-    		keypoints, descriptors = read_kps_desc_from_file(generate_keypoints_path(filenames[i]))
-	        representative_kps.append(keypoints)
-	        representative_desc.append(descriptors)
-	    return representative_kps, representative_desc
+
+class Group:
+
+    def __init__(self, config, filenames):
+        self.config = config
+        self.filenames = filenames
+        self.representative_indices = []
+        self.grouped_list_indices = []
+
+    def get_rep_masks(self):
+        rep_mask_objs = []
+        for i in self.representative_indices:
+            mask_path = MaskImage.generate_mask_path(self.filenames[i])
+            rep_mask_objs.append(MaskImage(mask_path))
+
+    def get_rep_keypoints(self):
+        rep_keypoint_objs = []
+        for i in self.representative_indices:
+            kps_path = SiftKeypoints.generate_keypoints_path(self.filenames[i])
+            rep_keypoint_objs.append(SiftKeypoints(kps_path))
 
     def find_number_of_keypoints_all_images(self):
-    	num_kps_all_images = []
-    	for filename in filenames: 
-			pickle_file = open(generate_keypoints_path(filename), "rb")
-        	kps_and_descs_list = pickle.load(pickle_file)
-        	pickle_file.close()
-	        num_kps_all_images.append(len(kps_and_descs_list))
-	    return num_kps_all_images
-
-	def read_kps_desc_from_file(self, kps_path):
-		keypoints = []
-		descriptors = []
-		pickle_file = open(kps_path, "rb")
-        kps_and_descs_list = pickle.load(pickle_file)
-        pickle_file.close()
-        for kp_and_desc in kps_and_descs_list:
-            [pt, size, angle, response, octave, class_id, desc] = kp_and_desc
-            kp = cv2.KeyPoint(x=pt[0], y=pt[1], _size=size, _angle=angle, _response=response, _octave=octave, _class_id=class_id)
-            keypoints.append(kp)
-            descriptors.append(desc)
-            del kp_and_desc
-        descriptors = np.asarray(descriptors)
-	    return keypoints, descriptors 
-
-	def generate_keypoints_path(filename):
-		logging.info("Generating keypoints path")
-		kp_dir = config.get("Keypoints.directory")
-		kp_ext = config.get("Keypoints.file_extension")
-		return os.path.abspath(kp_dir).replace("\\", "/") + "/" + filename + kp_ext
-	
-	#return masks of the actual representatives
+        num_kps_all_images = []
+        for filename in self.filenames:
+            pickle_file = open(SiftKeypoints.generate_keypoints_path(filename), "rb")
+            kps_and_descs_list = pickle.load(pickle_file)
+            pickle_file.close()
+            num_kps_all_images.append(len(kps_and_descs_list))
+        return num_kps_all_images
