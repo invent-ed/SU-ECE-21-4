@@ -10,45 +10,24 @@ from ConcreteClass.SnowLeopardImage import SnowLeopardImage
 from ConcreteClass.SiftKeypoints import SiftKeypoints
 from ConcreteClass.MrcnnMaskGenerator import MrcnnMaskGenerator
 from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
-
+from ConcreteClass.Group import Group
 
 def main():
     setup_logger()
     config = JsonConfig("data/config.json")
     maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
+ 
+    groups = group_by_metadata(config)
+    #for group in groups:
+    #    findRepresentatives(group)
 
-    kps_list = []
-    for image_path in list_of_images(config):
-        filename = filename_without_ext(image_path)
-        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
-        if not os.path.isfile(kps_path):
-            print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
-            logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
-            imageObj = SnowLeopardImage(image_path)
-            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
-        logging.info("LOADING KEYPOINTS: " + kps_path)
-        kpsObj = SiftKeypoints(kps_path)
-        if kpsObj.length > 0:
-            kps_list.append(kpsObj)
-    
-    writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-    header = ["Primary Image Filename", "Secondary Image Filename", "Num Strong Matches", "Average Distance", "Standard Deviation of Distances"]
-    writer.writerow(header)
-
-    for i, primaryKpsObj in enumerate(kps_list):
-        for j, secondaryKpsObj in enumerate(kps_list):
-            if i>j:
-                num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
-                print("Number of strong matches: ", num_strong_matches)
-                logging.info("Number of strong matches: " + str(num_strong_matches))
 
 
 def setup_logger():
     FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
     FILENAME = "data/logs/log_" + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + ".log"
     logging.basicConfig(format=FORMAT, filename=FILENAME, level=logging.DEBUG)
-
 
 def list_of_images(config):
     images_dir = config.get("images.directory")
@@ -57,9 +36,110 @@ def list_of_images(config):
     return [x.replace("\\", "/") for x in path_list]
 
 
+########################################################################
+#####################   Metadata grouping ##############################
+########################################################################
+def group_by_metadata(config):
+    # while (going thru list)
+    #groups = defaultdict(list)
+    list_of_groups = []
+    grouped_images= []
+    prev_hour, prev_minute = 0
+    for image_path in ist_of_images(config):    	
+    	# call getTitleChars to get metadata
+	    station, camera, date, time = getTitleChars(image_path)
+	    # Calculate time difference
+	    hour, minute, sec = getTimeChars(time)
+	    # Exceptions if hour is near the edge
+	    if (hour == 0 and prev_hour == 23):
+	        hour += 24
+	    
+	    # if previous image is 1 hour behind
+	    if (hour - prev_hour) == 1:
+	        new_minute = minute + 60
+	        time_difference = new_minute - prev_minute
+	    # end of exception its in the same hour
+	    elif (hour == prev_hour):
+	        time_difference = minute - prev_minute
+	    else:
+	        time_difference = 10
+
+        # Group by station, camera, date, and time (within 5 min)
+        # Or first item in new group. 
+        if ((station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6)) or len(grouped_images)==0:   
+            grouped_images.append(filename_without_ext(image_path))
+            prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
+        # If not, add list to Group, append Group to list, and create new list
+        else:
+            print(grouped_images)
+            newGroup = Group(config, grouped_images)
+            list_of_groups.append(newGroup)
+            # Create new list
+            grouped_images= []
+            prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
+   
+    print(grouped_images)
+    newGroup = Group(config, grouped_images)
+    list_of_groups.append(newGroup)
+    return list_of_groups
+
+
+#          print("Loading image: " + image_path)
+#        if iterator == 1:
+            # Create new empty list for images of similar metadata
+#            grouped_images= []
+            # Add image to list
+#            grouped_images.append(image_path)
+#            station, camera, date, time = getTitleChars(image_path)
+#            hour, minute, sec = getTimeChars(time)
+#            prev_station = station
+#            prev_camera = camera
+#            prev_date = date
+#            prev_hour = hour
+#            prev_minute = minute
+#            prev_sec = sec
+#            iterator = iterator + 1
+    
 def filename_without_ext(file_path):
     base = os.path.basename(file_path)
     return os.path.splitext(base)[0]
+
+def getTimeDiff(image_path):
+
+
+########################################################################
+#####################   Representatives   ##############################
+########################################################################
+#def find_representatives(group):
+
+    #initially keypoints  - mask - blurriness...
+
+########################################################################
+#######################   Matching   ###################################
+########################################################################
+def match_groups(groups):
+    kps_list = []
+    for group in groups:
+        for filename in group.filenames:
+            kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
+            if not os.path.isfile(kps_path):
+                print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
+                logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
+                imageObj = SnowLeopardImage(image_path)
+                keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
+            logging.info("LOADING KEYPOINTS: " + kps_path)
+            kpsObj = SiftKeypoints(kps_path)
+            if kpsObj.length > 0:
+                kps_list.append(kpsObj)
+
+    for i, primaryKpsObj in enumerate(kps_list):
+        for j, secondaryKpsObj in enumerate(kps_list):
+            if i>j:
+                num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
+                print("Number of strong matches: ", num_strong_matches)
+                logging.info("Number of strong matches: " + str(num_strong_matches))
+
+            #Then do some function that will group if conditions are meet
 
 
 def match(config, primaryKpsObj, secondaryKpsObj):
@@ -77,7 +157,7 @@ def match(config, primaryKpsObj, secondaryKpsObj):
 
     distance_of_matches = []
     for i in strong_matches:
-    	distance_of_matches.append(i.distance)
+        distance_of_matches.append(i.distance)
     distance_of_matches.sort()
     average = np.average(distance_of_matches)
     standard_deviation = np.std(distance_of_matches)
