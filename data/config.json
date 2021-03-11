@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/Cat23",
+    "directory": "data/images/Cat2",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -18,7 +18,7 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/Cat23",
+    "directory": "data/keypoints/Cat2",
     "file_extension": ".PKL"
   },
   "results": {

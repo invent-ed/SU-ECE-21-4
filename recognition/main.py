@@ -58,7 +58,6 @@ def group_by_metadata(config):
         # Exceptions if hour is near the edge
         if (hour == 0 and prev_hour == 23):
             hour += 24
-
         # if previous image is 1 hour behind
         if (hour - prev_hour) == 1:
             new_minute = minute + 60
@@ -69,21 +68,22 @@ def group_by_metadata(config):
         else:
             time_difference = 10
 
-# Group by station, camera, date, and time (within 5 min)
-# Or first item in new group. 
-
-        if (station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6):
-            grouped_images.append(image_path)
+        # Group by station, camera, date, and time (within 5 min)
+        # Or first item in new group. 
+        if ((station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6)) or (len(grouped_images) == 0):
+            grouped_images.append(filename_without_ext(image_path))
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
-#If not, add list to Group, append Group to list, and create new list
+        #If not, add list to Group, append Group to list, and create new list
         else:
+            print(len(grouped_images))
             print(grouped_images)
             newGroup = Group(config, grouped_images)
             list_of_groups.append(newGroup)
             # Create new list
             grouped_images= []
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
-
+    
+    print(len(grouped_images))
     print(grouped_images)
     newGroup = Group(config, grouped_images)
     list_of_groups.append(newGroup)
