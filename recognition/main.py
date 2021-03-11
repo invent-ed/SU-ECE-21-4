@@ -19,8 +19,8 @@ def main():
     keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
  
     groups = group_by_metadata(config)
-    #for group in groups:
-    #    findRepresentatives(group)
+    for group in groups:
+        findRepresentatives(group)
 
 
 
@@ -131,9 +131,10 @@ def getTitleChars(title):
 ########################################################################
 #####################   Representatives   ##############################
 ########################################################################
-#def find_representatives(group):
-
-    #initially keypoints  - mask - blurriness...
+def find_representatives(group):
+	#initially keypoints  - mask - blurriness...
+	number_of_keypoints_all_images = group.find_number_of_keypoints_all_images()
+	number_of_keypoints_all_images.sort()
 
 ########################################################################
 #######################   Matching   ###################################
