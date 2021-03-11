@@ -20,7 +20,10 @@ def main():
  
     groups = group_by_metadata(config)
     for group in groups:
-        findRepresentatives(group)
+        group.find_representatives()
+    for primary in groups:
+    	for secondary in groups:
+    		match(config, primary.get_rep_keypoints(), secondary.get_rep_keypoints())
 
 
 
@@ -125,16 +128,7 @@ def getTitleChars(title):
     # dont want the last 7 characters
     time = title_chars[4][:-7]
     return station, camera, date, time
-    
 
-
-########################################################################
-#####################   Representatives   ##############################
-########################################################################
-def find_representatives(group):
-	#initially keypoints  - mask - blurriness...
-	number_of_keypoints_all_images = group.find_number_of_keypoints_all_images()
-	number_of_keypoints_all_images.sort()
 
 ########################################################################
 #######################   Matching   ###################################
@@ -177,21 +171,21 @@ def match(config, primaryKpsObj, secondaryKpsObj):
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
 
-    distance_of_matches = []
-    for i in strong_matches:
-        distance_of_matches.append(i.distance)
-    distance_of_matches.sort()
-    average = np.average(distance_of_matches)
-    standard_deviation = np.std(distance_of_matches)
-
-    matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
-
-    writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-    writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
+    print("writing the matches")
     write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
-
     return len(strong_matches)
 
+#    distance_of_matches = []
+   # for i in strong_matches:
+   #      distance_of_matches.append(i.distance)
+   #  distance_of_matches.sort()
+   #  average = np.average(distance_of_matches)
+   #  standard_deviation = np.std(distance_of_matches)
+
+   #  matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
+
+   #  writer = csv.writer(open(config.get("results.matching_data"), 'a'))
+   #  writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
 
 def write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches):
     primary_image_path = SnowLeopardImage.generate_image_path(config, primaryKpsObj.filename)
