@@ -13,17 +13,17 @@ from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
 from ConcreteClass.Group import Group
 
 def main():
-    setup_logger()
-    config = JsonConfig("data/config.json")
-    maskGenerator = MrcnnMaskGenerator(config)
-    keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
+    #setup_logger()
+    #config = JsonConfig("data/config.json")
+    #maskGenerator = MrcnnMaskGenerator(config)
+    #keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
  
-    groups = group_by_metadata(config)
+    #groups = group_by_metadata(config)
     #for group in groups:
     #    findRepresentatives(group)
 
-
-
+    match_with_group()
+    
 def setup_logger():
     FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
     FILENAME = "data/logs/log_" + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + ".log"
@@ -35,6 +35,24 @@ def list_of_images(config):
     path_list = list(glob.iglob(os.path.abspath(images_dir + "/*" + image_ext)))
     return [x.replace("\\", "/") for x in path_list]
 
+def match_with_group(groups):
+    #INPUT: list of tuples, that contain indices of matched Groups
+    #OUTPUT: a list of sets that matched
+    #groups = [(1,2),(1,4),(2,3),(3,4),(3,5),(4,5),(6,7)]
+    
+    groups = map(set, groups)
+    unions = []
+    for item in groups:
+        temp = []
+        for s in unions:
+            if not s.isdisjoint(item):
+                item = s.union(item)
+            else:
+                temp.append(s)
+        temp.append(item)
+        unions = temp
+    print(unions)
+    return unions
 
 ########################################################################
 #####################   Metadata grouping ##############################
@@ -69,13 +87,13 @@ def group_by_metadata(config):
         else:
             time_difference = 10
 
-# Group by station, camera, date, and time (within 5 min)
-# Or first item in new group. 
+        # Group by station, camera, date, and time (within 5 min)
+        # Or first item in new group. 
 
-        if (station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6):
-            grouped_images.append(image_path)
+        if ((station == prev_station) and (camera == prev_camera) and (date == prev_date) and (time_difference < 6)) or (len(grouped_images) == 0):
+            grouped_images.append(filename_without_ext(image_path))
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
-#If not, add list to Group, append Group to list, and create new list
+        #If not, add list to Group, append Group to list, and create new list
         else:
             print(grouped_images)
             newGroup = Group(config, grouped_images)
@@ -88,23 +106,6 @@ def group_by_metadata(config):
     newGroup = Group(config, grouped_images)
     list_of_groups.append(newGroup)
     return list_of_groups
-
-
-#          print("Loading image: " + image_path)
-#        if iterator == 1:
-            # Create new empty list for images of similar metadata
-#            grouped_images= []
-            # Add image to list
-#            grouped_images.append(image_path)
-#            station, camera, date, time = getTitleChars(image_path)
-#            hour, minute, sec = getTimeChars(time)
-#            prev_station = station
-#            prev_camera = camera
-#            prev_date = date
-#            prev_hour = hour
-#            prev_minute = minute
-#            prev_sec = sec
-#            iterator = iterator + 1
     
 def filename_without_ext(file_path):
     base = os.path.basename(file_path)
