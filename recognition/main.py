@@ -18,9 +18,12 @@ def main():
     #maskGenerator = MrcnnMaskGenerator(config)
     #keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
  
-    #groups = group_by_metadata(config)
-    #for group in groups:
-    #    findRepresentatives(group)
+    groups = group_by_metadata(config)
+    for group in groups:
+        group.find_representatives()
+    for primary in groups:
+    	for secondary in groups:
+    		match(config, primary.get_rep_keypoints(), secondary.get_rep_keypoints())
 
     match_with_group()
     
@@ -76,7 +79,6 @@ def group_by_metadata(config):
         # Exceptions if hour is near the edge
         if (hour == 0 and prev_hour == 23):
             hour += 24
-
         # if previous image is 1 hour behind
         if (hour - prev_hour) == 1:
             new_minute = minute + 60
@@ -95,13 +97,15 @@ def group_by_metadata(config):
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
         #If not, add list to Group, append Group to list, and create new list
         else:
+            print(len(grouped_images))
             print(grouped_images)
             newGroup = Group(config, grouped_images)
             list_of_groups.append(newGroup)
             # Create new list
             grouped_images= []
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
-
+    
+    print(len(grouped_images))
     print(grouped_images)
     newGroup = Group(config, grouped_images)
     list_of_groups.append(newGroup)
@@ -126,15 +130,7 @@ def getTitleChars(title):
     # dont want the last 7 characters
     time = title_chars[4][:-7]
     return station, camera, date, time
-    
 
-
-########################################################################
-#####################   Representatives   ##############################
-########################################################################
-#def find_representatives(group):
-
-    #initially keypoints  - mask - blurriness...
 
 ########################################################################
 #######################   Matching   ###################################
@@ -177,21 +173,21 @@ def match(config, primaryKpsObj, secondaryKpsObj):
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
 
-    distance_of_matches = []
-    for i in strong_matches:
-        distance_of_matches.append(i.distance)
-    distance_of_matches.sort()
-    average = np.average(distance_of_matches)
-    standard_deviation = np.std(distance_of_matches)
-
-    matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
-
-    writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-    writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
+    print("writing the matches")
     write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
-
     return len(strong_matches)
 
+#    distance_of_matches = []
+   # for i in strong_matches:
+   #      distance_of_matches.append(i.distance)
+   #  distance_of_matches.sort()
+   #  average = np.average(distance_of_matches)
+   #  standard_deviation = np.std(distance_of_matches)
+
+   #  matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
+
+   #  writer = csv.writer(open(config.get("results.matching_data"), 'a'))
+   #  writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
 
 def write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches):
     primary_image_path = SnowLeopardImage.generate_image_path(config, primaryKpsObj.filename)
