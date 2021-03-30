@@ -20,7 +20,7 @@ def main():
  	
  	kps_list = []
 	for image_path in list_of_images(config):
-		kps_path = SiftKeypoints.generate_keypoints_path(self.config, self.filenames[i])
+		kps_path = SiftKeypoints.generate_keypoints_path(config, filename_without_ext(image_path))
         kps_list.append(SiftKeypoints(kps_path))
     
     for i, primaryKpsObj in enumerate(kps_list):
