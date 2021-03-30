@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/Cat2",
+    "directory": "data/images/GoodRightCat1",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -18,7 +18,7 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/Cat2",
+    "directory": "data/keypoints/GoodRightCat1",
     "file_extension": ".PKL"
   },
   "results": {

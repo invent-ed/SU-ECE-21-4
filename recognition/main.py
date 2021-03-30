@@ -13,19 +13,32 @@ from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
 from ConcreteClass.Group import Group
 
 def main():
-    #setup_logger()
-    #config = JsonConfig("data/config.json")
+    setup_logger()
+    config = JsonConfig("data/config.json")
     #maskGenerator = MrcnnMaskGenerator(config)
     #keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
- 
-    groups = group_by_metadata(config)
-    for group in groups:
-        group.find_representatives()
-    for primary in groups:
-    	for secondary in groups:
-    		match(config, primary.get_rep_keypoints(), secondary.get_rep_keypoints())
+ 	
+ 	kps_list = []
+	for image_path in list_of_images(config):
+		kps_path = SiftKeypoints.generate_keypoints_path(self.config, self.filenames[i])
+        kps_list.append(SiftKeypoints(kps_path))
+    
+    for i, primaryKpsObj in enumerate(kps_list):
+        for j, secondaryKpsObj in enumerate(kps_list):
+            if j>i:
+                num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
+                print("Number of strong matches: ", num_strong_matches)
+                logging.info("Number of strong matches: " + str(num_strong_matches))
 
-    match_with_group()
+    # groups = group_by_metadata(config)
+    # for group in groups:
+    #     group.find_representatives()
+    # match_groups(config, groups)
+    #for primary in groups:
+        #for secondary in groups:
+            #match(config, primary.get_rep_keypoints(), secondary.get_rep_keypoints())
+
+    #match_with_group()
     
 def setup_logger():
     FORMAT = "[%(filename)s:%(lineno)s - $(funcName)40s() ] %(message)s"
@@ -38,24 +51,6 @@ def list_of_images(config):
     path_list = list(glob.iglob(os.path.abspath(images_dir + "/*" + image_ext)))
     return [x.replace("\\", "/") for x in path_list]
 
-def match_with_group(groups):
-    #INPUT: list of tuples, that contain indices of matched Groups
-    #OUTPUT: a list of sets that matched
-    #groups = [(1,2),(1,4),(2,3),(3,4),(3,5),(4,5),(6,7)]
-    
-    groups = map(set, groups)
-    unions = []
-    for item in groups:
-        temp = []
-        for s in unions:
-            if not s.isdisjoint(item):
-                item = s.union(item)
-            else:
-                temp.append(s)
-        temp.append(item)
-        unions = temp
-    print(unions)
-    return unions
 
 ########################################################################
 #####################   Metadata grouping ##############################
@@ -71,7 +66,7 @@ def group_by_metadata(config):
     prev_station = None 
     prev_camera = None 
     prev_date = None
-    for image_path in list_of_images(config):    	
+    for image_path in list_of_images(config):       
         # call getTitleChars to get metadata
         station, camera, date, time = getTitleChars(image_path)
         # Calculate time difference
@@ -135,24 +130,37 @@ def getTitleChars(title):
 ########################################################################
 #######################   Matching   ###################################
 ########################################################################
-def match_groups(groups):
+
+
+def match_with_group(groups):
+    #INPUT: list of tuples, that contain indices of matched Groups
+    #OUTPUT: a list of sets that matched
+    #groups = [(1,2),(1,4),(2,3),(3,4),(3,5),(4,5),(6,7)]
+    
+    groups = map(set, groups)
+    unions = []
+    for item in groups:
+        temp = []
+        for s in unions:
+            if not s.isdisjoint(item):
+                item = s.union(item)
+            else:
+                temp.append(s)
+        temp.append(item)
+        unions = temp
+    print(unions)
+    return unions
+
+def match_groups(config, groups):
     kps_list = []
     for group in groups:
-        for filename in group.filenames:
-            kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
-            if not os.path.isfile(kps_path):
-                print("GENERATING KEYPOINTS FOR IMAGE:", image_path)
-                logging.info("GENERATING KEYPOINTS FOR IMAGE: " + image_path)
-                imageObj = SnowLeopardImage(image_path)
-                keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
-            logging.info("LOADING KEYPOINTS: " + kps_path)
-            kpsObj = SiftKeypoints(kps_path)
-            if kpsObj.length > 0:
-                kps_list.append(kpsObj)
+        rep_kps = group.get_rep_keypoints()
+        for i in rep_kps:
+            kps_list.append(i)
 
     for i, primaryKpsObj in enumerate(kps_list):
         for j, secondaryKpsObj in enumerate(kps_list):
-            if i>j:
+            if j>i:
                 num_strong_matches = match(config, primaryKpsObj, secondaryKpsObj)
                 print("Number of strong matches: ", num_strong_matches)
                 logging.info("Number of strong matches: " + str(num_strong_matches))
@@ -173,21 +181,25 @@ def match(config, primaryKpsObj, secondaryKpsObj):
         if m.distance < 0.7 * n.distance:
             strong_matches.append(m)
 
-    print("writing the matches")
+    strong_matches = ransac(primaryKpsObj.keypoints, secondaryKpsObj.keypoints, strong_matches)
+
+    # distance_of_matches = []
+    # for i in strong_matches:
+    #     distance_of_matches.append(i.distance)
+    # distance_of_matches.sort()
+    # average = np.average(distance_of_matches)
+    # standard_deviation = np.std(distance_of_matches)
+
+    # matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
+
+    # writer = csv.writer(open(config.get("results.matching_data"), 'a'))
+    # writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
+
+    #print("writing the matches")
     write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches)
     return len(strong_matches)
 
-#    distance_of_matches = []
-   # for i in strong_matches:
-   #      distance_of_matches.append(i.distance)
-   #  distance_of_matches.sort()
-   #  average = np.average(distance_of_matches)
-   #  standard_deviation = np.std(distance_of_matches)
 
-   #  matching_meta_data = [primaryKpsObj.filename, secondaryKpsObj.filename, len(strong_matches), average, standard_deviation]
-
-   #  writer = csv.writer(open(config.get("results.matching_data"), 'a'))
-   #  writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
 
 def write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches):
     primary_image_path = SnowLeopardImage.generate_image_path(config, primaryKpsObj.filename)
@@ -211,32 +223,33 @@ def write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches):
     cv2.imwrite(result_image_path, matches_drawn, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
 
-# def ransac(kp1, kp2, strong_matches):
-# 	MIN_MATCH_COUNT = 10
-#     if len(strong_matches)>MIN_MATCH_COUNT:
-#     	src_pts = np.float32([ kp1[m.queryIdx].pt for m in strong_matches ]).reshape(-1,1,2)
-#     	dst_pts = np.float32([ kp2[m.trainIdx].pt for m in strong_matches ]).reshape(-1,1,2)
-#
-#     	M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-#     	matchesMask = mask.ravel().tolist()
-#
-#     	#h,w,d = img1.shape
-#     	#pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-#     	#dst = cv2.perspectiveTransform(pts,M)
-#     	#img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-#
-#     	best_matches = []
-#     	for index, maskI in enumerate(matchesMask):
-#     		if maskI == 1:
-#     			best_matches.append(strong_matches[index])
-#     	del strong_matches[:]
-#     	strong_matches = best_matches
-#
-#     else:
-#     	print( "Not enough matches are found - {}/{}".format(len(strong_matches), MIN_MATCH_COUNT) )
-#     	matchesMask = None
-#
-#    	return strong_matches
+def ransac(kp1, kp2, strong_matches):
+  MIN_MATCH_COUNT = 10
+    if len(strong_matches)>MIN_MATCH_COUNT:
+      src_pts = np.float32([ kp1[m.queryIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+      dst_pts = np.float32([ kp2[m.trainIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+
+      M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+      matchesMask = mask.ravel().tolist()
+
+      #h,w,d = img1.shape
+      #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+      #dst = cv2.perspectiveTransform(pts,M)
+      #img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+
+      best_matches = []
+      for index, maskI in enumerate(matchesMask):
+          if maskI == 1:
+              best_matches.append(strong_matches[index])
+      del strong_matches[:]
+      strong_matches = best_matches
+      return best_matches
+
+    else:
+      print( "Not enough matches are found - {}/{}".format(len(strong_matches), MIN_MATCH_COUNT) )
+      matchesMask = None
+
+      return strong_matches
 
 if __name__ == "__main__":
     main()
