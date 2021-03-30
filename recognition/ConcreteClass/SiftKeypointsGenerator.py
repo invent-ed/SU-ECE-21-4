@@ -1,6 +1,7 @@
 import os
 import cv2
 import logging
+import numpy as np
 from AbstractBaseClass.KeypointsGenerator import KeypointsGenerator
 from ConcreteClass.MaskImage import MaskImage
 from ConcreteClass.SiftKeypoints import SiftKeypoints
@@ -39,11 +40,13 @@ class SiftKeypointsGenerator(KeypointsGenerator):
 
     def get_mask_if_mask_generator_exists(self, imageObj):
         logging.info("Getting mask in the keypoint generator.")
-        maskObj = None
         if self.maskGenerator is not None:
             mask_path = self.maskGenerator.generate_mask_if_not_exist(imageObj)
-            maskObj = MaskImage(mask_path)
-        return maskObj
+        else:
+            mask = np.uint8(np.ones(imageObj.image.shape[:2])*255)
+            mask_path = MaskImage.generate_mask_path(self.config, imageObj.filename)
+            MaskImage.save_mask_to_file(mask_path, mask)
+        return MaskImage(mask_path)
 
     def compute_kps_and_desc(self, imageObj, maskObj=None):
         logging.info("Generating keypoints")

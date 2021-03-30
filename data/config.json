@@ -1,14 +1,14 @@
 {
   "images": {
     "directory": "data/images/shirt",
-    "file_extension": ".JPG"
+    "file_extension": ".jpg"
   },
   "ImageFilter": {
     "directory": "data/filtered_images",
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/All",
+    "directory": "data/masks/shirt",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",

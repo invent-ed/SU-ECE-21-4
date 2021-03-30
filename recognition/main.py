@@ -16,12 +16,18 @@ def main():
     setup_logger()
     config = JsonConfig("data/config.json")
     #maskGenerator = MrcnnMaskGenerator(config)
-    #keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
- 	
- 	kps_list = []
-	for image_path in list_of_images(config):
-		kps_path = SiftKeypoints.generate_keypoints_path(config, filename_without_ext(image_path))
-        kps_list.append(SiftKeypoints(kps_path))
+    keypointsGenerator = SiftKeypointsGenerator(config)
+    
+    print(list_of_images(config))
+    kps_list = []
+    for image_path in list_of_images(config):
+        kps_path = SiftKeypoints.generate_keypoints_path(config, filename_without_ext(image_path))
+        if not os.path.isfile(kps_path):
+            imageObj = SnowLeopardImage(image_path)
+            keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
+        kpsObj = SiftKeypoints(kps_path)
+        if kpsObj.length > 0:
+            kps_list.append(kpsObj)
     
     for i, primaryKpsObj in enumerate(kps_list):
         for j, secondaryKpsObj in enumerate(kps_list):
@@ -224,32 +230,29 @@ def write_matches(config, primaryKpsObj, secondaryKpsObj, strong_matches):
 
 
 def ransac(kp1, kp2, strong_matches):
-  MIN_MATCH_COUNT = 10
+    MIN_MATCH_COUNT = 10
     if len(strong_matches)>MIN_MATCH_COUNT:
-      src_pts = np.float32([ kp1[m.queryIdx].pt for m in strong_matches ]).reshape(-1,1,2)
-      dst_pts = np.float32([ kp2[m.trainIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+        src_pts = np.float32([ kp1[m.queryIdx].pt for m in strong_matches ]).reshape(-1,1,2)
+        dst_pts = np.float32([ kp2[m.trainIdx].pt for m in strong_matches ]).reshape(-1,1,2)
 
-      M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-      matchesMask = mask.ravel().tolist()
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+        matchesMask = mask.ravel().tolist()
 
-      #h,w,d = img1.shape
-      #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-      #dst = cv2.perspectiveTransform(pts,M)
-      #img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+        #h,w,d = img1.shape
+        #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+        #dst = cv2.perspectiveTransform(pts,M)
+        #img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
 
-      best_matches = []
-      for index, maskI in enumerate(matchesMask):
-          if maskI == 1:
-              best_matches.append(strong_matches[index])
-      del strong_matches[:]
-      strong_matches = best_matches
-      return best_matches
+        best_matches = []
+        for index, maskI in enumerate(matchesMask):
+            if maskI == 1:
+                best_matches.append(strong_matches[index])
+        return best_matches
 
     else:
-      print( "Not enough matches are found - {}/{}".format(len(strong_matches), MIN_MATCH_COUNT) )
-      matchesMask = None
-
-      return strong_matches
+        print( "Not enough matches are found - {}/{}".format(len(strong_matches), MIN_MATCH_COUNT) )
+        matchesMask = None
+        return strong_matches
 
 if __name__ == "__main__":
     main()
