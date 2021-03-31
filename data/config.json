@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/GoodRightCat1",
+    "directory": "data/images/shirt",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -8,7 +8,7 @@
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/All",
+    "directory": "data/masks/shirt",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",
@@ -18,11 +18,11 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/GoodRightCat1",
+    "directory": "data/keypoints/shirt",
     "file_extension": ".PKL"
   },
   "results": {
-    "directory": "data/results",
+    "directory": "data/results/shirt",
 	"matching_data": "data/results/matching_data.csv"
   }
 }
