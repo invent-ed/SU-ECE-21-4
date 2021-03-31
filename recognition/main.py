@@ -15,11 +15,9 @@ from ConcreteClass.Group import Group
 def main():
     setup_logger()
     config = JsonConfig("data/config.json")
-    print("main")
     #maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config)
     
-    print(list_of_images(config))
     kps_list = []
     for image_path in list_of_images(config):
         filename = filename_without_ext(image_path)
