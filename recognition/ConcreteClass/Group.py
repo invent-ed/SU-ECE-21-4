@@ -39,9 +39,8 @@ class Group:
         #initially keypoints  - mask - blurriness...
         num_kps_all_images = self.find_number_of_keypoints_all_images()
         num_kps_all_images = np.array(num_kps_all_images)
-        print(num_kps_all_images)
         order = np.argsort(num_kps_all_images)
-        #for i in range(1,3):
-        self.representative_indices.append(order[-1])
-        print(self.representative_indices, num_kps_all_images[order[-1:]])
-
+        for i in range(1,2):
+            if i <= len(self.filenames):
+                self.representative_indices.append(order[-i])
+                print(self.filenames[order[-i]])

@@ -15,13 +15,15 @@ from ConcreteClass.Group import Group
 def main():
     setup_logger()
     config = JsonConfig("data/config.json")
+    print("main")
     #maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config)
     
     print(list_of_images(config))
     kps_list = []
     for image_path in list_of_images(config):
-        kps_path = SiftKeypoints.generate_keypoints_path(config, filename_without_ext(image_path))
+        filename = filename_without_ext(image_path)
+        kps_path = SiftKeypoints.generate_keypoints_path(config, filename)
         if not os.path.isfile(kps_path):
             imageObj = SnowLeopardImage(image_path)
             keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
@@ -39,10 +41,7 @@ def main():
     # groups = group_by_metadata(config)
     # for group in groups:
     #     group.find_representatives()
-    # match_groups(config, groups)
-    #for primary in groups:
-        #for secondary in groups:
-            #match(config, primary.get_rep_keypoints(), secondary.get_rep_keypoints())
+    #match_groups(config, groups)
 
     #match_with_group()
     
@@ -64,6 +63,7 @@ def list_of_images(config):
 def group_by_metadata(config):
 # while (going thru list)
 #groups = defaultdict(list)
+    print("in metadata")
     list_of_groups = []
     grouped_images= []
     prev_hour = 0
@@ -72,7 +72,8 @@ def group_by_metadata(config):
     prev_station = None 
     prev_camera = None 
     prev_date = None
-    for image_path in list_of_images(config):       
+    for image_path in list_of_images(config):
+        print("image path:",image_path)       
         # call getTitleChars to get metadata
         station, camera, date, time = getTitleChars(image_path)
         # Calculate time difference

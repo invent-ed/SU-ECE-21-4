@@ -37,7 +37,7 @@ class SnowLeopardImage(Image):
         self.path = image_path
         self.load_image_from_file(image_path)
         self.extract_filename_and_extension(image_path)
-        #self.extract_camera_trap_info(self.filename)
+        self.extract_camera_trap_info(self.filename)
 
     def load_image_from_file(self, image_path):
         logging.info("Loading image from file")

@@ -1,14 +1,14 @@
 {
   "images": {
-    "directory": "data/images/shirt",
-    "file_extension": ".jpg"
+    "directory": "data/images/GoodRightCat1",
+    "file_extension": ".JPG"
   },
   "ImageFilter": {
     "directory": "data/filtered_images",
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/shirt",
+    "directory": "data/masks/All",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",
@@ -18,7 +18,7 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/shirt",
+    "directory": "data/keypoints/GoodRightCat1",
     "file_extension": ".PKL"
   },
   "results": {
