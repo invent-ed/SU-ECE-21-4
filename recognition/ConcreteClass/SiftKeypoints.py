@@ -23,6 +23,7 @@ class SiftKeypoints(Keypoints):
     @staticmethod
     def generate_keypoints_path(config, filename):
         logging.info("Generating keypoints path")
+        filename = os.path.splitext(os.path.basename(filename))[0]
         kp_dir = config.get("Keypoints.directory")
         kp_ext = config.get("Keypoints.file_extension")
         return os.path.abspath(kp_dir).replace("\\", "/") + "/" + filename + kp_ext

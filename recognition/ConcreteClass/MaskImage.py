@@ -20,6 +20,7 @@ class MaskImage(Image):
     @staticmethod
     def generate_mask_path(config, filename):
         logging.info("Generating mask path")
+        filename = os.path.splitext(os.path.basename(filename))[0]
         mask_dir = config.get("Mask.directory")
         mask_ext = config.get("Mask.file_extension")
         return os.path.abspath(mask_dir).replace("\\", "/") + "/" + filename + mask_ext

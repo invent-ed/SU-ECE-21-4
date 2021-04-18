@@ -24,5 +24,8 @@
   "results": {
     "directory": "data/results/shirt",
 	"matching_data": "data/results/matching_data.csv"
+  },
+  "logs": {
+    "directory": "data/logs"
   }
 }
