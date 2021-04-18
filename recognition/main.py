@@ -2,7 +2,6 @@ import os
 import glob
 import logging
 import cv2
-import csv
 import numpy as np
 from time import localtime, strftime
 from ConcreteClass.JsonConfig import JsonConfig

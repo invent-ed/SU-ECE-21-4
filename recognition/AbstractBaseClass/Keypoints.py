@@ -4,10 +4,10 @@ from abc import ABCMeta, abstractmethod
 class Keypoints(metaclass=ABCMeta):
 
     @abstractmethod
-    def __init__(self, kp_path):
+    def __init__(self, kps_path):
         self.path = None
-        self.keypoints = None
-        self.descriptors = None
+        self.keypoints = []
+        self.descriptors = []
 
     @staticmethod
     @abstractmethod

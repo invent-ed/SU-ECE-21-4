@@ -8,14 +8,14 @@ from AbstractBaseClass.Image import Image
 
 class MaskImage(Image):
 
-    def __init__(self, mask_path=None):
-        self.path = mask_path
+    def __init__(self, image_path):
+        self.path = image_path
         self.mask = None
         self.filename = None
         self.ext = None
-        if mask_path is not None:
-            self.extract_filename_and_extension(mask_path)
-            self.load_mask_from_file(mask_path)
+        if image_path is not None:
+            self.extract_filename_and_extension(image_path)
+            self.load_mask_from_file(image_path)
 
     @staticmethod
     def generate_mask_path(config, filename):

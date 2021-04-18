@@ -7,7 +7,8 @@ from AbstractBaseClass.Image import *
 
 
 class SnowLeopardImage(Image):
-    def __init__(self, image_path=None, cat_id=None):
+
+    def __init__(self, image_path, cat_id=None):
         self.path = None
         self.image = None
         self.filename = None

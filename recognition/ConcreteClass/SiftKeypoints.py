@@ -8,7 +8,7 @@ from AbstractBaseClass.Keypoints import Keypoints
 
 class SiftKeypoints(Keypoints):
 
-    def __init__(self, kps_path=None, maskObj=None):
+    def __init__(self, kps_path, maskObj=None):
         self.path = kps_path
         self.length = None
         self.keypoints = []
