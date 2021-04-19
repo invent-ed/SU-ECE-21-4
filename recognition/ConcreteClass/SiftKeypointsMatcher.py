@@ -37,7 +37,8 @@ class SiftKeypointsMatcher(Matcher):
 
         # print("writing the matches")
         self.write_matches(self.config, primaryKpsObj, secondaryKpsObj, strong_matches)
-        return len(strong_matches)
+        
+        return (len(strong_matches) > 5)
 
     def write_matches(self, primaryKpsObj, secondaryKpsObj, strong_matches):
         primary_image_path = SnowLeopardImage.generate_image_path(self.config, primaryKpsObj.filename)
