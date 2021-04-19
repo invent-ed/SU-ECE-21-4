@@ -36,7 +36,8 @@ class SiftKeypointsMatcher(Matcher):
         # writer.writerow(matching_meta_data + distance_of_matches[0:10] + distance_of_matches[-10:])
 
         # print("writing the matches")
-        self.write_matches(self.config, primaryKpsObj, secondaryKpsObj, strong_matches)
+        #if (len(strong_matches) > 5):
+            #self.write_matches(primaryKpsObj, secondaryKpsObj, strong_matches)
         
         return (len(strong_matches) > 5)
 

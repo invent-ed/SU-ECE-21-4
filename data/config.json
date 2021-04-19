@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/Cat1Separated/Right/Good",
+    "directory": "data/images/GoodRightCat1",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -8,7 +8,7 @@
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/Cat1",
+    "directory": "data/masks/All",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",
@@ -18,11 +18,11 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/Cat1",
+    "directory": "data/keypoints/GoodRightCat1",
     "file_extension": ".PKL"
   },
   "results": {
-    "directory": "data/results/Cat1RightGood",
+    "directory": "data/results/GoodRightCat1",
 	"matching_data": "data/results/matching_data.csv"
   },
   "logs": {
