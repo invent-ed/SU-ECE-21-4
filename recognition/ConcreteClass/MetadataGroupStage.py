@@ -51,6 +51,7 @@ class MetadataGroupStage(GroupStage):
 
         newGroup = Group(self.config, grouped_images)
         list_of_groups.append(newGroup)
+        logging.info("All metadata groups have been made")
         return list_of_groups
 
     def filename_without_ext(self, image_path):

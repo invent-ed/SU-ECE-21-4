@@ -35,5 +35,6 @@ if __name__ == "__main__":
 
     # run through each group stage
     groups = []
+    
     for stage in group_stages:
         groups = stage.process(groups)
