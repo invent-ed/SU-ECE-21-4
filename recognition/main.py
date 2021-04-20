@@ -9,6 +9,10 @@ from ConcreteClass.MetadataGroupStage import MetadataGroupStage
 from ConcreteClass.RepGroupStage import RepGroupStage
 from ConcreteClass.OrphanGroupStage import OrphanGroupStage
 
+from group_metadata_functions import *
+from group_orphans_functions import *
+from group_representatives_functions import *
+
 
 if __name__ == "__main__":
 
