@@ -5,13 +5,11 @@ from ConcreteClass.SiftKeypoints import SiftKeypoints
 from ConcreteClass.MrcnnMaskGenerator import MrcnnMaskGenerator
 from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
 from ConcreteClass.SiftKeypointsMatcher import SiftKeypointsMatcher
-from ConcreteClass.MetadataGroupStage import MetadataGroupStage
-from ConcreteClass.RepGroupStage import RepGroupStage
-from ConcreteClass.OrphanGroupStage import OrphanGroupStage
+
 
 from group_metadata_functions import *
 from group_orphans_functions import *
-from group_representatives_functions import *
+from match_groups_functions import *
 
 
 if __name__ == "__main__":
@@ -22,13 +20,12 @@ if __name__ == "__main__":
     maskGenerator = MrcnnMaskGenerator(config)
     keypointsGenerator = SiftKeypointsGenerator(config)
 
-    # set up group stages
     matcher = SiftKeypointsMatcher(config)
-    group_stages = [
-        MetadataGroupStage(config),
-        RepGroupStage(config, matcher),
-        OrphanGroupStage(config, matcher)
-    ]
+    # group_stages = [
+    #     MetadataGroupStage(config),
+    #     RepGroupStage(config, matcher),
+    #     OrphanGroupStage(config, matcher)
+    # ]
 
     # generate mask and keypoints for each image
     for image_path in config.get_image_list():
@@ -38,7 +35,11 @@ if __name__ == "__main__":
             keypointsGenerator.generate_and_save_keypoints(imageObj, kps_path)
 
     # run through each group stage
-    groups = []
+    groups_list = []
+    groups_list = group_by_metadata(config, groups_list)
+    for group in groups_list:
+    	group.find_representatives()
+    groups_list = match_groups(config, matcher, groups_list)
     
-    for stage in group_stages:
-        groups = stage.process(groups)
+    # for stage in group_stages:
+    #     groups = stage.process(groups)
