@@ -13,7 +13,12 @@ def group_by_metadata(config, groups_list):
     prev_station = None
     prev_camera = None
     prev_date = None
+
+    #Goes through all of the image titles in the directory. 
     for image_path in config.get_image_list():
+        
+        #***Finds the time difference between the previous image and current image.******
+
         station, camera, date, time = extract_camera_trap_info(image_path)
         hour, minute, sec = extract_time_info(time)
         # Exceptions if hour is near the edge
@@ -29,13 +34,14 @@ def group_by_metadata(config, groups_list):
         else:
             time_difference = 10
 
-        # Group by station, camera, date, and time (within 5 min)
-        # Or first item in new group.
+        # If first item in the group of images, or within 5 minutes of last image, add to the current
+        # metadata group.
         if ((station == prev_station) and (camera == prev_camera) and (date == prev_date) and (
                 time_difference < 6)) or (len(grouped_images) == 0):
             grouped_images.append(filename_without_ext(image_path))
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
-        # If not, add list to Group, append Group to list, and create new list
+        # If not create a group object that contains all images in current grouped images list. 
+        # Empty grouped images. 
         else:
             newGroup = Group(config, grouped_images)
             list_of_groups.append(newGroup)
@@ -43,6 +49,7 @@ def group_by_metadata(config, groups_list):
             grouped_images = []
             prev_station, prev_camera, prev_date, prev_hour, prev_minute, prev_sec = station, camera, date, hour, minute, sec
 
+    #Last metadata group.
     newGroup = Group(config, grouped_images)
     list_of_groups.append(newGroup)
     logging.info("All metadata groups have been made")
