@@ -33,5 +33,5 @@ if __name__ == "__main__":
     # run through each group stage
     groups_list = []
     groups_list = group_by_metadata(config, groups_list)
-    groups_list = group_by_representatives(config, matcher, groups_list)
+    groups_list = group_by_representatives(matcher, groups_list)
     groups_list = group_orphans(config, matcher, groups_list)

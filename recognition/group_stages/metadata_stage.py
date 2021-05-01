@@ -29,17 +29,15 @@ def group_by_metadata(config, groups_list):
 
         # decide which group to put current image in
         if image_taken_at_same_location and within_threshold_time_apart:
-            # add current image to current group
-            curr_group.append(filename)
+            curr_group.append(filename)      # add current image to current group
         else:
-            # add current group to list of groups, and start new group
-            groups.append(curr_group)
-            curr_group = [filename]
+            groups.append(curr_group)        # add current group to list of groups
+            curr_group = [filename]          # and start a new group
         prev_location, prev_epoch_time = location, epoch_time
 
-    # include last group and return list of Group objects
-    groups.append(curr_group)
-    return [Group(config, g) for g in groups]
+    groups.pop(0)                               # remove first group, which is empty
+    groups.append(curr_group)                   # include last group
+    return [Group(config, g) for g in groups]   # return list of Group objects
 
 
 def filename_without_ext(image_path):
