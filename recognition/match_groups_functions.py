@@ -5,6 +5,16 @@ from ConcreteClass.Group import Group
 
 def match_groups(config, Matcher, groups_list):
 	logging.info("Beginning to collect representative keypoints")
+
+	#count all of the groups that should be matched:
+	numShouldMatch = 0
+	for i, prim in enumerate(groups_list): 
+		for j, sec in enumerate(groups_list):
+			if j > i:
+				if Matcher.matchCheck(prim.filenames[0], sec.filenames[0]):
+					numShouldMatch = numShouldMatch + 1
+	print("Number of groups:",len(groups_list), ". Num should match:",numShouldMatch)
+
 	#Finds representatives based on images with the most keypoints. 
 	#Creates list rep_kps_list[].
 	#This list is 2D, and follows this format:
@@ -32,26 +42,28 @@ def match_groups(config, Matcher, groups_list):
 	#Compares all of the keypoint objects of the secondary metadata group to current keypoint object
 	#of the primary keypoint group. 
 
-
+	ijMatched = False
 	for i, primary_group_reps in enumerate(rep_kps_list):
 		for primaryKpsObj in primary_group_reps:
 			for j, secondary_group_reps in enumerate(rep_kps_list):
-				if j > i:
+				if j > i and not ijMatched:
 					for secondaryKpsObj in secondary_group_reps:
 						logging.info("Checking two groups ")
 						if (Matcher.match(primaryKpsObj, secondaryKpsObj)):
 							#Records a match as a touple of group indicies. 
 							matched_groups.append((i,j))
 							logging.info("Matched: two groups")
+							ijMatched = True
 						else: 
 							#Records the group as being matched to itself. 
 							#This is so that every group is accounted for when creating the matched groups object. 
 							matched_groups.append((i,i))
-
+		ijMatched = False
 
 	print(matched_groups)
 	logging.info("Finished matching process")
 	matched_groups = sets_of_merged_groups(matched_groups)
+	print(matched_groups)
 
 	#Go through the list of all the matches. (If no match the single group index will just be in the list.)
 	#Merge all of the groups that have been matched together. 

@@ -43,12 +43,9 @@ class Group:
         for i in range(1,2):
             if i <= len(self.filenames):
                 self.representative_indices.append(order[-i])
-                print(self.filenames[order[-i]])
                 
     def merge_groups(self, matched_group):
         self.grouped_list_indices.append(len(self.filenames))
-        print(self.grouped_list_indices)
-        print(matched_group.filenames[0])
         for i in matched_group.filenames:
             self.filenames.append(i)
         for i in matched_group.representative_indices:
