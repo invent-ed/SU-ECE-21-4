@@ -35,6 +35,7 @@ class Group:
             num_kps_all_images.append(len(kps_and_descs_list))
         return num_kps_all_images
 
+    # Finds representatives based on images with the most keypoints.
     def find_representatives(self):
         #initially keypoints  - mask - blurriness...
         num_kps_all_images = self.find_number_of_keypoints_all_images()
@@ -44,9 +45,15 @@ class Group:
             if i <= len(self.filenames):
                 self.representative_indices.append(order[-i])
                 
-    def merge_groups(self, matched_group):
+    def merge_with(self, secondary_group):
         self.grouped_list_indices.append(len(self.filenames))
+<<<<<<< HEAD
         for i in matched_group.filenames:
+=======
+        print(self.grouped_list_indices)
+        print(secondary_group.filenames[0])
+        for i in secondary_group.filenames:
+>>>>>>> b6aa8f4c9d3b4b2d82e406f1264ce25dc266dc05
             self.filenames.append(i)
-        for i in matched_group.representative_indices:
+        for i in secondary_group.representative_indices:
             self.representative_indices.append(i)

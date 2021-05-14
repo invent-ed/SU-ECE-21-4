@@ -21,6 +21,11 @@
     "directory": "data/keypoints/GoodRightCat1",
     "file_extension": ".PKL"
   },
+  "grouping": {
+    "metadata": {
+      "threshold": 5
+    }
+  },
   "results": {
     "directory": "data/results/GoodRightCat1",
 	"matching_data": "data/results/matching_data.csv"
