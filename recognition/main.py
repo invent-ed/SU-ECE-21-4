@@ -20,7 +20,7 @@ if __name__ == "__main__":
     config = JsonConfig("data/config.json")
     config.setup_logger()
     maskGenerator = MrcnnMaskGenerator(config)
-    keypointsGenerator = SiftKeypointsGenerator(config)
+    keypointsGenerator = SiftKeypointsGenerator(config, maskGenerator)
     matcher = SiftKeypointsMatcher(config)
 
     # generate keypoints for each image if they do not exist
