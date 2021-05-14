@@ -13,7 +13,7 @@ def group_by_metadata(config, groups_list):
     groups = []
     curr_group = []
     prev_location = None
-    prev_epoch_time = None
+    prev_epoch_time = 0
 
     for image_path in config.get_image_list():
 

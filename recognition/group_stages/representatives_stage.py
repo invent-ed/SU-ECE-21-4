@@ -10,12 +10,28 @@ def group_by_representatives(matcher, groups_list):
     for i, prim in enumerate(groups_list): 
         for j, sec in enumerate(groups_list):
             if j > i:
-                if Matcher.matchCheck(prim.filenames[0], sec.filenames[0]):
+                if matcher.matchCheck(prim.filenames[0], sec.filenames[0]):
                     numShouldMatch = numShouldMatch + 1
     print("Number of groups:",len(groups_list), ". Num should match:",numShouldMatch)
     
     rep_kps_list = load_keypoints_for_each_representative(groups_list)
     matched_pairs_list = find_groups_with_matched_representatives(rep_kps_list, matcher)
+    
+    #I MADE THIS HERE
+    numOfCorrectMatches = 0
+    numOfWrongMatches = 0
+    for tuple in matched_pairs_list:
+        #print(tuple)
+        #print(rep_kps_list[0][0].filename)
+        #print(rep_kps_list[tuple[0]][0].filename)
+        if (tuple[0] != tuple[1]):
+            if matcher.matchCheck(rep_kps_list[tuple[0]][0].filename, rep_kps_list[tuple[1]][0].filename):
+                numOfCorrectMatches += 1
+            else:
+                numOfWrongMatches += 1
+    print("Number of correct matches = ", numOfCorrectMatches)
+    print("Number of wrong matches = ", numOfWrongMatches)
+    
     merged_sets_list = sets_of_merged_groups(matched_pairs_list)
     complete_sets_list = include_orphans(merged_sets_list, len(groups_list))
     new_groups = generate_new_groups_from_sets(groups_list, complete_sets_list)

@@ -47,13 +47,9 @@ class Group:
                 
     def merge_with(self, secondary_group):
         self.grouped_list_indices.append(len(self.filenames))
-<<<<<<< HEAD
-        for i in matched_group.filenames:
-=======
         print(self.grouped_list_indices)
         print(secondary_group.filenames[0])
         for i in secondary_group.filenames:
->>>>>>> b6aa8f4c9d3b4b2d82e406f1264ce25dc266dc05
             self.filenames.append(i)
         for i in secondary_group.representative_indices:
             self.representative_indices.append(i)
