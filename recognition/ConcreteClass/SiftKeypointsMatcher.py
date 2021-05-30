@@ -14,7 +14,6 @@ class SiftKeypointsMatcher(Matcher):
         secondaryFileName = secondaryKpsFilename + ".JPG"
         with open('data/truth_table.csv', 'rt') as f:
             reader = csv.reader(f, delimiter=',') # good point by @paco
-            print(primaryFileName, secondaryFileName)
             for row in reader:
                 if row[2] == primaryFileName:
                     primaryCatID = row[3]
@@ -25,25 +24,16 @@ class SiftKeypointsMatcher(Matcher):
 
     def match(self, primaryKpsObj, secondaryKpsObj):
 
-        primaryFileName = primaryKpsObj.filename + ".JPG"
-        secondaryFileName = secondaryKpsObj.filename + ".JPG"
-        with open('data/truth_table.csv', 'rt') as f:
-            reader = csv.reader(f, delimiter=',') # good point by @paco
-            print(primaryFileName, secondaryFileName)
-            for row in reader:
-                if row[2] == primaryFileName:
-                    primaryCatID = row[3]
-                if row[2] == secondaryFileName:
-                    secondaryCatID = row[3]
+        sameCat = self.matchCheck(primaryKpsObj.filename, secondaryKpsObj.filename)
                     
         from random import random
 
         ran = random()
-        if primaryCatID == secondaryCatID:
-            if ran < .5:
+        if sameCat:
+            if ran < .15:
                 return True
         else:
-            if ran < .05:
+            if ran < .0005:
                 return True
 
         print("Returning false!!! :) ;)")

@@ -35,4 +35,4 @@ if __name__ == "__main__":
     groups_list = group_by_representatives(matcher, groups_list)
 
     
-    
+def write

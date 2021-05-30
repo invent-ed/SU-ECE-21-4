@@ -14,3 +14,5 @@ data/masks/*
 !data/masks/.gitkeep
 data/results/*
 !data/results/.gitkeep
+data/sift
+data/mrcnn_templates

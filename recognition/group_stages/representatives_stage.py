@@ -6,35 +6,13 @@ import logging
 # The keypoints of the representative images are loaded into the program for the matching process.
 # Matching is determined by the matcher object, so can be changed with new child class.
 def group_by_representatives(matcher, groups_list):
-    numShouldMatch = 0
-    for i, prim in enumerate(groups_list): 
-        for j, sec in enumerate(groups_list):
-            if j > i:
-                if matcher.matchCheck(prim.filenames[0], sec.filenames[0]):
-                    numShouldMatch = numShouldMatch + 1
-    print("Number of groups:",len(groups_list), ". Num should match:",numShouldMatch)
+
     
     rep_kps_list = load_keypoints_for_each_representative(groups_list)
     matched_pairs_list = find_groups_with_matched_representatives(rep_kps_list, matcher)
     
-    #I MADE THIS HERE
-    numOfCorrectMatches = 0
-    numOfWrongMatches = 0
-    for tuple in matched_pairs_list:
-        #print(tuple)
-        #print(rep_kps_list[0][0].filename)
-        #print(rep_kps_list[tuple[0]][0].filename)
-        if (tuple[0] != tuple[1]):
-            if matcher.matchCheck(rep_kps_list[tuple[0]][0].filename, rep_kps_list[tuple[1]][0].filename):
-                numOfCorrectMatches += 1
-            else:
-                numOfWrongMatches += 1
-    print("Number of correct matches = ", numOfCorrectMatches)
-    print("Number of wrong matches = ", numOfWrongMatches)
-    
     merged_sets_list = sets_of_merged_groups(matched_pairs_list)
-    complete_sets_list = include_orphans(merged_sets_list, len(groups_list))
-    new_groups = generate_new_groups_from_sets(groups_list, complete_sets_list)
+    new_groups = generate_new_groups_from_sets(groups_list, merged_sets_list)
     return new_groups
 
 
@@ -65,11 +43,12 @@ def find_groups_with_matched_representatives(rep_kps_list, matcher):
     # Loops to a different metadata group. (Secondary metadata group. Different than the primary group.)
     # Compares all of the keypoint objects of the secondary metadata group to current keypoint object
     # of the primary keypoint group.
+    numMatchesThatHappen = 0
     ijMatched = False
     for i, primary_group_reps in enumerate(rep_kps_list):
         for primaryKpsObj in primary_group_reps:
             for j, secondary_group_reps in enumerate(rep_kps_list):
-                if j > i and not ijMatched:
+                if j > i: # and not ijMatched:
                     for secondaryKpsObj in secondary_group_reps:
                         logging.info("Checking two groups ")
                         if matcher.match(primaryKpsObj, secondaryKpsObj):
@@ -81,7 +60,9 @@ def find_groups_with_matched_representatives(rep_kps_list, matcher):
                             # Records the group as being matched to itself.
                             # This is so that every group is accounted for when creating the matched groups object.
                             matched_groups.append((i, i))
+                        numMatchesThatHappen = numMatchesThatHappen + 1
         ijMatched = False
+    print("Number of total matches:", numMatchesThatHappen)
     return matched_groups
 
 
@@ -103,17 +84,6 @@ def sets_of_merged_groups(matched_pairs_list):
         unions = temp
     return unions
 
-
-# Input:  List of sets of Groups to be merged, and total number of Groups
-#         e.g. include_orphans([{2, 3}, {0, 1, 4}, {5, 6, 8, 11}], 12)
-# Output: Final list of sets containing the indices of the merged Groups AND orphans
-#         e.g. [{2, 3}, {0, 1, 4}, {5, 6, 8, 11}, {9}, {10}, {7}]
-def include_orphans(merged_sets_list, total):
-    all_groups = set(range(total))
-    non_orphans = set.union(*merged_sets_list)
-    orphans = all_groups - non_orphans
-    orphans_list = [set([orphan]) for orphan in orphans]
-    return merged_sets_list + orphans_list
 
 # Input1: old list of Group objects
 #         e.g. [group0, group1, group2, group3, group4, group5, group6, group7, group8, group9, group10, group11]
