@@ -12,7 +12,6 @@ from ConcreteClass.SiftKeypointsGenerator import SiftKeypointsGenerator
 from ConcreteClass.SiftKeypointsMatcher import SiftKeypointsMatcher
 from group_stages.metadata_stage import group_by_metadata
 from group_stages.representatives_stage import group_by_representatives
-from group_stages.orphan_stage import group_orphans
 
 if __name__ == "__main__":
 
@@ -34,4 +33,6 @@ if __name__ == "__main__":
     groups_list = []
     groups_list = group_by_metadata(config, groups_list)
     groups_list = group_by_representatives(matcher, groups_list)
-    groups_list = group_orphans(config, matcher, groups_list)
+
+    
+    
