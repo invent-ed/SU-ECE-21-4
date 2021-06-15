@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/Cat1",
+    "directory": "data/images/testCat",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -8,7 +8,7 @@
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/Cat1",
+    "directory": "data/masks/testCat",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",
@@ -18,16 +18,18 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/Cat1",
+    "directory": "data/keypoints/testCat",
     "file_extension": ".PKL"
   },
   "grouping": {
     "metadata": {
       "threshold": 5
-    }
-  },
+    },
+	"number_of_representatives": 2  
+	},
+  
   "results": {
-    "directory": "data/results/Cat1",
+    "directory": "data/results/testCat",
     "catID_csv": "data/results/catID.csv",
     "move": false
   },

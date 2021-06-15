@@ -11,6 +11,7 @@ class Group:
         self.filenames = filenames
         self.representative_indices = []
         self.grouped_list_indices = []
+        self.numOfRepresentatives = self.config.get("grouping.number_of_representatives")
 
     def get_rep_masks(self):
         rep_mask_objs = []
@@ -41,9 +42,10 @@ class Group:
         num_kps_all_images = self.find_number_of_keypoints_all_images()
         num_kps_all_images = np.array(num_kps_all_images)
         order = np.argsort(num_kps_all_images)
-        for i in range(1,2):
+        for i in range(1,self.numOfRepresentatives + 1):
             if i <= len(self.filenames):
                 self.representative_indices.append(order[-i])
+                print(self.filenames[order[-i]])
                 
     def merge_with(self, secondary_group):
         self.grouped_list_indices.append(len(self.filenames))
