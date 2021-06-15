@@ -30,7 +30,7 @@ class SiftKeypointsMatcher(Matcher):
 
         ran = random()
         if sameCat:
-            if ran < .15:
+            if ran < .10:
                 return True
         else:
             if ran < .0005:
