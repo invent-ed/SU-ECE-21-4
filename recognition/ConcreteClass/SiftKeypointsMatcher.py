@@ -23,35 +23,23 @@ class SiftKeypointsMatcher(Matcher):
         return primaryCatID == secondaryCatID
 
     def match(self, primaryKpsObj, secondaryKpsObj):
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict()
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(primaryKpsObj.descriptors, secondaryKpsObj.descriptors, k=2)
 
-        sameCat = self.matchCheck(primaryKpsObj.filename, secondaryKpsObj.filename)
-                    
-        from random import random
-
-        ran = random()
-        if sameCat:
-            if ran < .10:
-                return True
-        else:
-            if ran < .0005:
-                return True
-
-        return False
-
-        # FLANN_INDEX_KDTREE = 0
-        # index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-        # search_params = dict()
-        # flann = cv2.FlannBasedMatcher(index_params, search_params)
-        # matches = flann.knnMatch(primaryKpsObj.descriptors, secondaryKpsObj.descriptors, k=2)
-
-        # # ratio test as per Lowe's paper
-        # strong_matches = []
-        # for m, n in matches:
-        #     if m.distance < 0.7 * n.distance:
-        #         strong_matches.append(m)
-        # strong_matches = self.ransac(primaryKpsObj.keypoints, secondaryKpsObj.keypoints, strong_matches)
+        # ratio test as per Lowe's paper
+        strong_matches = []
+        for m, n in matches:
+            if m.distance < 0.7 * n.distance:
+                strong_matches.append(m)
+        strong_matches = self.ransac(primaryKpsObj.keypoints, secondaryKpsObj.keypoints, strong_matches)
         
-        # return (len(strong_matches) > 5)
+        if (self.config.get("matching.write_matches")):
+            self.write_matches(primaryKpsObj,secondaryKpsObj,strong_matches)
+
+        return (len(strong_matches) > self.config.get("matching.threshold"))
 
     def write_matches(self, primaryKpsObj, secondaryKpsObj, strong_matches):
         primary_image_path = SnowLeopardImage.generate_image_path(self.config, primaryKpsObj.filename)
