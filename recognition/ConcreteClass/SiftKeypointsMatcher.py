@@ -36,7 +36,6 @@ class SiftKeypointsMatcher(Matcher):
             if ran < .0005:
                 return True
 
-        print("Returning false!!! :) ;)")
         return False
 
         # FLANN_INDEX_KDTREE = 0
