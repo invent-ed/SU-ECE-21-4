@@ -23,6 +23,8 @@ class SiftKeypointsMatcher(Matcher):
         return primaryCatID == secondaryCatID
 
     def match(self, primaryKpsObj, secondaryKpsObj):
+        if (len(primaryKpsObj.descriptors) == 0) or (len(secondaryKpsObj.descriptors) == 0):
+            return False
         FLANN_INDEX_KDTREE = 0
         index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
         search_params = dict()

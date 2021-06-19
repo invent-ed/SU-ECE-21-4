@@ -1,6 +1,6 @@
 {
   "images": {
-    "directory": "data/images/Cat11",
+    "directory": "data/images/leopardImages",
     "file_extension": ".JPG"
   },
   "ImageFilter": {
@@ -8,7 +8,7 @@
     "file_extension": ".PNG"
   },
   "Mask": {
-    "directory": "data/masks/Cat11",
+    "directory": "data/masks/leopardImages",
     "file_extension": ".BMP",
     "mrcnn": {
       "device": "/cpu:0",
@@ -18,7 +18,7 @@
     }
   },
   "Keypoints": {
-    "directory": "data/keypoints/Cat11",
+    "directory": "data/keypoints/leopardImages",
     "file_extension": ".PKL"
   },
   "grouping": {
@@ -32,7 +32,7 @@
   	"write_matches": true
   },
   "results": {
-    "directory": "data/results/Cat11",
+    "directory": "data/results/leopardImages",
     "catID_csv": "data/results/catID.csv",
     "move": false
   },

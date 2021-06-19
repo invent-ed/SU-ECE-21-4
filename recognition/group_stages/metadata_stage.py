@@ -46,11 +46,10 @@ def filename_without_ext(image_path):
 
 
 def extract_image_metadata(filename):
-    ignored, station, camera, date, hms = filename.split("__")
-    location = " ".join([station, camera])
-    datetime = " ".join([date, hms])[:-3]
+    ignored, station, camera, cam_id, date, hms = filename.split("__")
+    location = " ".join([station, camera, cam_id])
+    datetime = " ".join([date, hms])
     return location, datetime
-
-
+    
 def convert_to_epoch_time(datetime):
     return int(time.mktime(time.strptime(datetime, "%Y-%m-%d %H-%M-%S")))
