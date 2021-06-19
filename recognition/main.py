@@ -15,8 +15,8 @@ from group_stages.metadata_stage import group_by_metadata
 from group_stages.representatives_stage import group_by_representatives
 
     
-def write_groups_to_csv(groups_list):
-    with open ('data/groupings.csv', 'w') as file:
+def write_groups_to_csv(catID_csv, groups_list):
+    with open (catID_csv, 'w') as file:
         writer = csv.writer(file)
         for i, group in enumerate(groups_list):
             for file in group.filenames:
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     groups_list = group_by_metadata(config, groups_list)
     groups_list = group_by_representatives(matcher, groups_list)
     
-    write_groups_to_csv(groups_list)
+    write_groups_to_csv(config.get("results.catID_csv"), groups_list)
 
     
 
